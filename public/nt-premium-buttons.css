@@ -1,0 +1,158 @@
+/* National Trade — premium button skin (presentation only).
+   Does not replace or intercept events, form submits, links, or backend requests.
+   Top-center notifications and the existing mobile bottom navigation keep their behavior.
+*/
+:root {
+  --nt-btn-glow: 74, 144, 255;
+  --nt-btn-outline: rgba(111, 171, 249, .26);
+}
+
+/* Consistent focus and tap feedback across User and Admin pages. */
+body button:not(.nt-toast-close) {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition-property: background-color, background-image, color, border-color, box-shadow, filter, transform;
+  transition-duration: .20s;
+  transition-timing-function: ease;
+}
+body button:focus-visible {
+  outline: 2px solid #70bcff;
+  outline-offset: 3px;
+}
+body button:not(:disabled):not(.nt-toast-close):not(.tab-btn):active {
+  transform: scale(.975);
+}
+body button:disabled:not(.nt-toast-close) {
+  cursor: not-allowed;
+  filter: saturate(.65);
+  opacity: .65;
+}
+
+/* The original Tailwind background colors are retained (Blue, Purple, Red,
+   Green, etc.). A glass highlight and matched shadow are layered on top. */
+body button[class*="bg-"]:not(.tab-btn):not(.nt-toast-close):not(.nt-dialog-btn) {
+  border-radius: 15px;
+  background-image: linear-gradient(155deg,
+    rgba(255,255,255,.13) 0%,
+    rgba(255,255,255,.035) 43%,
+    rgba(0,6,19,.10) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 5px 16px rgba(0,0,0,.19),
+    0 4px 18px rgba(var(--nt-btn-glow),.095);
+}
+body button[class*="bg-"]:not(.tab-btn):not(.nt-toast-close):not(.nt-dialog-btn):not(:disabled):hover {
+  filter: brightness(1.07);
+  transform: translateY(-1px);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.17),
+    0 10px 24px rgba(0,0,0,.27),
+    0 4px 23px rgba(var(--nt-btn-glow),.22);
+}
+
+/* Accent glow follows the action's original meaning rather than making
+   Reject / Withdraw / Higher / Lower all look like the same confirmation. */
+body button[class*="bg-blue-"] { --nt-btn-glow: 59, 130, 246; }
+body button[class*="bg-purple-"] { --nt-btn-glow: 168, 85, 247; }
+body button[class*="bg-indigo-"] { --nt-btn-glow: 99, 102, 241; }
+body button[class*="bg-cyan-"] { --nt-btn-glow: 6, 182, 212; }
+body button[class*="bg-green-"],
+body button[class*="bg-emerald-"],
+body button[class*="bg-[#00c853]"] { --nt-btn-glow: 34, 197, 94; }
+body button[class*="bg-red-"],
+body button[class*="bg-[#ff3d00]"] { --nt-btn-glow: 239, 68, 68; }
+body button[class*="bg-orange-"] { --nt-btn-glow: 249, 115, 22; }
+body button[class*="bg-gray-"],
+body button[class*="bg-[#1e222d]"] { --nt-btn-glow: 88, 131, 203; }
+
+/* Main app actions: blue glow, retaining the user's original background-color,
+   width, padding, label text, and onclick function. */
+#page-auth button[class*="bg-blue-"],
+#page-deposit button[class*="bg-blue-"],
+#page-withdraw button[class*="bg-blue-"],
+#page-id-verify button[class*="bg-blue-"],
+#page-saving button[class*="bg-blue-"],
+#page-loan button[class*="bg-blue-"] {
+  border: 1px solid rgba(139,190,255,.30);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.18),
+              0 7px 25px rgba(37,99,235,.26);
+}
+
+/* Profile menu cards: same dark glass treatment as the premium bottom bar. */
+#page-settings button[class*="bg-[#1e222d]"] {
+  border: 1px solid rgba(109,148,216,.24);
+  background-color: #172339;
+  background-image: linear-gradient(145deg,rgba(71,109,181,.17),rgba(3,9,21,.09));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.055),0 7px 17px rgba(0,0,0,.20);
+}
+#page-settings button[class*="bg-[#1e222d]"]:hover {
+  border-color: rgba(101,177,255,.60);
+}
+
+/* Header auth and login/register tab buttons stay in place and keep behavior. */
+#auth-header-btns button {
+  border-radius: 14px;
+  background: linear-gradient(150deg,rgba(48,112,216,.16),rgba(10,22,49,.48));
+  border-color: rgba(85,152,241,.36);
+  box-shadow: 0 7px 20px rgba(37,99,235,.14);
+}
+#auth-tab-login, #auth-tab-register {
+  border-radius: 11px 11px 4px 4px;
+  transition: color .18s ease,background-color .18s ease,box-shadow .18s ease;
+}
+#auth-tab-login:hover, #auth-tab-register:hover {
+  background-color: rgba(55,109,211,.12);
+}
+
+/* Admin menu: active item retains its original navigation highlighting. */
+#admin-dashboard-portal .admin-nav-btn {
+  border: 1px solid transparent;
+  border-radius: 14px;
+}
+#admin-dashboard-portal .admin-nav-btn:not(:disabled):hover {
+  background-image: linear-gradient(130deg,rgba(57,101,175,.22),rgba(11,23,48,.22));
+  border-color: rgba(98,155,233,.26);
+  box-shadow: 0 6px 18px rgba(23,80,157,.12);
+}
+#admin-dashboard-portal .admin-nav-btn.bg-gray-800 {
+  background-image: linear-gradient(130deg,rgba(67,116,208,.22),rgba(18,28,49,.48));
+  border-color: rgba(103,165,245,.32);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.065);
+}
+
+/* Keep the top-center notification visually light, and harmonize only the
+   confirmation dialog action buttons with the same premium glass language. */
+#nt-dialog-overlay .nt-dialog-btn {
+  border-radius: 13px;
+  background-image: linear-gradient(145deg,rgba(255,255,255,.12),transparent 67%);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08),0 5px 18px rgba(0,0,0,.22);
+}
+#nt-dialog-overlay .nt-dialog-btn-primary {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.17),0 6px 20px rgba(37,99,235,.20);
+}
+#nt-dialog-overlay .nt-dialog-btn-danger {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.17),0 6px 20px rgba(220,38,38,.20);
+}
+
+/* Text / back / icon-only controls stay minimalist, with a subtle blue hover. */
+body button:not([class*="bg-"]):not(.tab-btn):not(.nt-toast-close):not(.nt-dialog-btn):not(.admin-nav-btn):not(:disabled):hover {
+  text-shadow: 0 0 14px rgba(96,165,250,.19);
+}
+
+/* Preserve the highly tuned bottom nav. It is excluded from generic skins. */
+#main-nav .tab-btn { background-image: none; }
+
+@media (max-width: 767px) {
+  /* Buttons keep their existing sizes, but long labels may wrap. */
+  #page-auth button[class*="bg-"],
+  #page-deposit button[class*="bg-"],
+  #page-withdraw button[class*="bg-"],
+  #page-saving button[class*="bg-"],
+  #page-id-verify button[class*="bg-"] {
+    max-width:100%;
+    overflow-wrap:anywhere;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  body button {transition:none !important;}
+}

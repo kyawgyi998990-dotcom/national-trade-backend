@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National Trade - Core Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- EmailJS SDK Library -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+
+    <style>
+        body { background-color: #0b0e11; color: #eaecef; font-family: 'Inter', sans-serif; }
+        .tab-active { border-bottom: 2px solid #3b82f6; color: white !important; }
+        .tab-page { animation: fadeIn 0.2s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .auth-hidden { display: none !important; }
+        .chat-scroll::-webkit-scrollbar { width: 4px; }
+        .chat-scroll::-webkit-scrollbar-track { background: transparent; }
+        .chat-scroll::-webkit-scrollbar-thumb { background: #374151; border-radius: 10px; }
+    </style>
+    
+<script src="/api.js"></script>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="border-b border-gray-800 bg-gray-900/80 px-6 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-blue-600 p-1.5 rounded text-white font-bold text-lg">NT</div>
+            <span class="text-xl font-black text-white tracking-tighter uppercase">National <span class="text-blue-500">Trade</span></span>
+        </div>
+        
+        <nav id="main-nav" class="auth-hidden flex items-center space-x-6 text-sm font-medium text-gray-400">
+            <button onclick="checkKycAndSwitch('trading')" id="btn-trading" class="tab-btn tab-active py-1">Trading</button>
+            <button onclick="checkKycAndSwitch('deposit')" id="btn-deposit" class="tab-btn py-1">Deposit</button>
+            <button onclick="checkKycAndSwitch('withdraw')" id="btn-withdraw" class="tab-btn py-1">Withdraw</button>
+            <button onclick="checkKycAndSwitch('saving')" id="btn-saving" class="tab-btn py-1">Savings</button>
+            <button onclick="checkKycAndSwitch('loan')" id="btn-loan" class="tab-btn py-1">Personal Loan</button>
+            <button onclick="switchTab('settings')" id="btn-settings" class="tab-btn text-gray-400 hover:text-white transition-colors ml-2 py-1">
+                <i class="fa-solid fa-gear text-lg"></i>
+            </button>
+        </nav>
+
+        <div id="top-balance-container" class="auth-hidden text-right">
+            <p class="text-[10px] text-gray-500 uppercase">Balance</p>
+            <p class="text-sm font-bold text-green-400 font-mono" id="top-balance">$0.00</p>
+        </div>
+
+        <div id="auth-header-btns" class="flex space-x-3">
+            <button onclick="switchTab('auth')" class="text-sm font-bold text-blue-500 border border-blue-500/30 px-4 py-1.5 rounded-lg hover:bg-blue-500/10 transition-all">Login / Sign Up</button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="p-4 max-w-[1400px] mx-auto">
+
+        <!-- AUTH PAGE -->
+        <div id="page-auth" class="tab-page max-w-md mx-auto mt-6 space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div class="bg-blue-600 w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-black mx-auto mb-4 shadow-lg shadow-blue-900/40">NT</div>
+                <h2 class="text-xl font-black text-white text-center mb-1 tracking-tighter uppercase">National Trade</h2>
+                <p class="text-gray-500 text-xs text-center mb-6">Secured Binary Options Platform</p>
+                
+                <div class="flex border-b border-gray-800 mb-6">
+                    <button id="auth-tab-login" onclick="toggleAuthForm('login')" class="w-1/2 py-2 text-center font-bold text-sm text-blue-500 border-b-2 border-blue-500">Login</button>
+                    <button id="auth-tab-register" onclick="toggleAuthForm('register')" class="w-1/2 py-2 text-center font-bold text-sm text-gray-500 hover:text-white">Sign Up</button>
+                </div>
+
+                <div id="form-login" class="space-y-4">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Email Address</label>
+                        <input type="email" id="login-id" placeholder="example@gmail.com" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Password</label>
+                        <input type="password" id="login-pass" placeholder="••••••••" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <button onclick="handleLoginSubmit()" class="w-full bg-blue-600 hover:bg-blue-700 py-3.5 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-900/20 mt-2">Login</button>
+                </div>
+
+                <div id="form-register" class="space-y-4 hidden">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Email Address</label>
+                        <input type="email" id="reg-id" placeholder="example@gmail.com" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Verification Code</label>
+                        <div class="flex space-x-2">
+                            <input type="text" id="reg-otp" placeholder="Enter 6-digit code" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                            <button id="btn-send-otp" onclick="sendOtpCode()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-blue-600/30">Send Code</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Password</label>
+                        <input type="password" id="reg-pass" placeholder="At least 6 characters" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Confirm Password</label>
+                        <input type="password" id="reg-confirm-pass" placeholder="Re-enter password" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <button onclick="handleRegisterSubmit()" class="w-full bg-blue-600 hover:bg-blue-700 py-3.5 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-900/20 mt-2">Create Account</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRADING PAGE -->
+        <div id="page-trading" class="tab-page hidden grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div class="lg:col-span-8 space-y-4">
+                <div class="bg-gray-900 border border-gray-800 rounded-xl h-[520px] overflow-hidden relative shadow-lg">
+                    <div class="absolute top-4 left-4 z-10 bg-[#1e222d]/90 p-3 rounded-lg border border-gray-700 backdrop-blur-sm flex items-center space-x-3">
+                        <select id="asset-selector" onchange="changeTradingAsset()" class="bg-gray-800 text-white font-bold text-sm px-3 py-1.5 rounded-lg border border-gray-600 outline-none">
+                            <option value="BTCUSDT">BTC/USDT (Crypto)</option>
+                            <option value="XAUUSD">XAU/USD (Gold)</option>
+                        </select>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-[#00ffad] font-mono text-lg font-bold" id="live-price-sync">...</span>
+                        </div>
+                    </div>
+                    <iframe id="tradingview-frame" src="https://s.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=1&theme=dark" width="100%" height="100%" frameborder="0"></iframe>
+                </div>
+                <div class="bg-gray-900 border border-gray-800 rounded-xl p-4">
+                    <h3 class="text-xs font-bold text-gray-500 uppercase mb-4 tracking-widest">Active Orders History</h3>
+                    <div id="trade-history" class="space-y-2">
+                        <p class="text-gray-600 text-sm italic text-center py-4">No active trades in the last 24h.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:col-span-4 bg-gray-900 border border-gray-800 rounded-xl p-6 h-fit shadow-xl">
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-sm font-bold text-gray-400 uppercase">FIXED TIME (1 MIN)</span>
+                    <span class="text-blue-500 font-bold text-xs uppercase">Profit 30%</span>
+                </div>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-xs text-gray-500 block mb-2 uppercase font-bold tracking-tighter">Investment Amount</label>
+                        <input type="number" id="invest-amount" value="10" oninput="updateExpectedPayout()" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl py-4 px-4 text-2xl font-mono text-white focus:border-blue-500 outline-none">
+                    </div>
+                    <div class="flex justify-between bg-gray-800/30 p-4 rounded-xl border border-gray-700">
+                        <span class="text-sm text-gray-400 font-medium">Expected Payout</span>
+                        <span class="text-green-400 font-bold text-lg" id="payout-display">$13.00</span>
+                    </div>
+                    <div class="space-y-3">
+                        <button onclick="placeTradeGuard('UP')" class="w-full bg-[#00c853] hover:bg-green-600 py-4 rounded-xl text-white font-black text-xl flex justify-between px-8 items-center transition-all active:scale-95">
+                            <span>HIGHER</span> <i class="fa-solid fa-arrow-trend-up"></i>
+                        </button>
+                        <button onclick="placeTradeGuard('DOWN')" class="w-full bg-[#ff3d00] hover:bg-red-600 py-4 rounded-xl text-white font-black text-xl flex justify-between px-8 items-center transition-all active:scale-95">
+                            <span>LOWER</span> <i class="fa-solid fa-arrow-trend-down"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DEPOSIT PAGE -->
+        <div id="page-deposit" class="tab-page hidden max-w-xl mx-auto space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <h2 class="text-xl font-bold mb-6 border-b border-gray-800 pb-4 text-white uppercase tracking-tighter">Deposit Crypto</h2>
+                <div class="space-y-5">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Select Asset</label>
+                        <select id="deposit-asset" onchange="updateDepositAddress()" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none">
+                            <option value="USDT">USDT (TRC20)</option>
+                            <option value="BTC">Bitcoin (BTC)</option>
+                            <option value="ETH">Ethereum (ETH)</option>
+                        </select>
+                    </div>
+                    <div class="bg-blue-600/10 border border-blue-500/30 p-5 rounded-2xl text-center">
+                        <p class="text-[10px] text-gray-500 uppercase font-bold mb-2">Company Wallet Address (<span id="deposit-asset-label">USDT (TRC20)</span>)</p>
+                        <p id="deposit-wallet-address" class="text-sm font-mono text-blue-400 break-all select-all">TDG6XXL7J59o1AbbbR6VEUGfDgrqbu2iZt</p>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Deposit Amount ($)</label>
+                        <input type="number" id="deposit-amount-input" placeholder="Enter amount to deposit" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Upload Transaction Screenshot</label>
+                        <input type="file" id="deposit-file-input" accept="image/*" class="w-full bg-gray-800 border border-gray-700 rounded-xl p-3 text-sm text-gray-400">
+                    </div>
+                    <button onclick="submitUserDeposit()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-lg transition-all shadow-lg shadow-blue-900/20">Submit Deposit Proof</button>
+                    
+                    <div id="deposit-success-notice" class="hidden bg-blue-600/10 border border-blue-500/30 p-4 rounded-xl text-center">
+                        <p class="text-xs text-blue-400 font-bold">The team will review and verify within 24 hours.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- WITHDRAW PAGE -->
+        <div id="page-withdraw" class="tab-page hidden max-w-xl mx-auto space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <h2 class="text-xl font-bold mb-6 border-b border-gray-800 pb-4 text-white uppercase tracking-tighter">Withdraw Assets</h2>
+                <div class="space-y-5">
+                    <div id="withdraw-form">
+                        <div class="mb-4">
+                            <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Withdraw Method</label>
+                            <select id="withdraw-method" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none focus:border-blue-500">
+                                <option>USDT (TRC20)</option>
+                                <option>Bitcoin (BTC)</option>
+                                <option>Ethereum (ETH)</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Your Wallet Address</label>
+                            <input type="text" id="withdraw-address" placeholder="Enter destination wallet address" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none focus:border-blue-500">
+                        </div>
+                        <div class="mb-6">
+                            <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Withdraw Amount ($)</label>
+                            <input type="number" id="withdraw-amount" placeholder="0.00" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none focus:border-blue-500">
+                        </div>
+                        <button onclick="submitUserWithdraw()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-lg transition-all shadow-lg shadow-blue-900/20">Confirm Withdrawal</button>
+                    </div>
+                    <div id="withdraw-success" class="hidden bg-blue-600/10 border border-blue-500/20 p-5 rounded-xl text-center">
+                        <i class="fa-solid fa-circle-check text-blue-500 text-3xl mb-3"></i>
+                        <p class="text-sm text-blue-400">Your withdrawal request will be processed within 24 hours.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SAVINGS MONEY PAGE -->
+        <div id="page-saving" class="tab-page hidden max-w-2xl mx-auto space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-800 pb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-white uppercase tracking-tighter">Saving Money Center</h2>
+                        <p class="text-xs text-gray-400 mt-1">Transfer funds from your trading account into secure savings plans with guaranteed profit.</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-gray-500 uppercase">Savings Balance</p>
+                        <p class="text-sm font-bold text-blue-400 font-mono" id="savings-total-balance">$0.00</p>
+                    </div>
+                </div>
+
+                <!-- Savings Plan Selection List -->
+                <div class="space-y-4">
+                    <label class="text-xs text-gray-400 block uppercase font-bold">Select Savings Plan & Profit Rate</label>
+                    <div class="space-y-3">
+                        <label class="flex items-center justify-between p-4 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="saving_plan" value="7" data-rate="0.25" class="accent-blue-500" checked>
+                                <div>
+                                    <p class="text-sm font-bold text-white">7 Days Plan</p>
+                                    <p class="text-[11px] text-gray-400">Locked for 7 days • 25% Profit</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-green-400 font-mono bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">+25% Return</span>
+                        </label>
+                        <label class="flex items-center justify-between p-4 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="saving_plan" value="15" data-rate="0.40" class="accent-blue-500">
+                                <div>
+                                    <p class="text-sm font-bold text-white">15 Days Plan</p>
+                                    <p class="text-[11px] text-gray-400">Locked for 15 days • 40% Profit</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-green-400 font-mono bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">+40% Return</span>
+                        </label>
+                        <label class="flex items-center justify-between p-4 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="saving_plan" value="20" data-rate="0.50" class="accent-blue-500">
+                                <div>
+                                    <p class="text-sm font-bold text-white">20 Days Plan</p>
+                                    <p class="text-[11px] text-gray-400">Locked for 20 days • 50% Profit</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-green-400 font-mono bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">+50% Return</span>
+                        </label>
+                        <label class="flex items-center justify-between p-4 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500 transition-all">
+                            <div class="flex items-center space-x-3">
+                                <input type="radio" name="saving_plan" value="30" data-rate="0.65" class="accent-blue-500">
+                                <div>
+                                    <p class="text-sm font-bold text-white">30 Days Plan</p>
+                                    <p class="text-[11px] text-gray-400">Locked for 30 days • 65% Profit</p>
+                                </div>
+                            </div>
+                            <span class="text-xs font-bold text-green-400 font-mono bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">+65% Return</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Deposit Amount to Savings ($)</label>
+                    <input type="number" id="saving-deposit-input" placeholder="Enter amount to lock in savings" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500 font-mono">
+                </div>
+
+                <button onclick="depositToSavings()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-lg transition-all shadow-lg shadow-blue-900/20">Transfer to Savings & Lock</button>
+
+                <div class="pt-4 border-t border-gray-800 space-y-3">
+                    <h3 class="text-sm font-bold text-white uppercase">Your Active Locked Savings</h3>
+                    <div id="active-savings-container" class="space-y-3">
+                        <p class="text-gray-600 text-xs italic text-center py-4">No active savings found.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PERSONAL LOAN PAGE -->
+        <div id="page-loan" class="tab-page hidden max-w-xl mx-auto space-y-6">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl space-y-6">
+                <h2 class="text-xl font-bold mb-2 border-b border-gray-800 pb-4 text-white uppercase tracking-tighter">Personal Loan Center</h2>
+                
+                <div id="loan-selection-view" class="space-y-4">
+                    <p class="text-xs text-gray-400">Please select your region:</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="selectLoanRegion('US')" class="bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 p-6 rounded-2xl text-center transition-all group">
+                            <i class="fa-solid fa-flag-usa text-blue-400 text-3xl mb-3 group-hover:scale-110 transition-transform"></i>
+                            <h3 class="font-bold text-white text-sm">US Region</h3>
+                            <p class="text-[10px] text-gray-400 mt-1">Business Capital Loans</p>
+                        </button>
+                        <button onclick="selectLoanRegion('OTHER')" class="bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 p-6 rounded-2xl text-center transition-all group">
+                            <i class="fa-solid fa-globe text-purple-400 text-3xl mb-3 group-hover:scale-110 transition-transform"></i>
+                            <h3 class="font-bold text-white text-sm">Other Country</h3>
+                            <p class="text-[10px] text-gray-400 mt-1">Balance-based Loans (2x)</p>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- US REGION FORM -->
+                <div id="loan-us-container" class="hidden space-y-5">
+                    <button onclick="backToLoanSelection()" class="text-xs text-blue-400 hover:underline flex items-center mb-2"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Region Select</button>
+                    <div class="bg-blue-600/10 border border-blue-500/30 p-4 rounded-xl">
+                        <p class="text-xs text-blue-300 font-medium leading-relaxed">The feature you have currently selected is exclusively for U.S. citizens to obtain business capital loans.</p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Select Loan Tier & Credit Score</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="us_loan_tier" value="800-850" data-min="5000" data-max="100000" class="accent-blue-500" checked onchange="updateUsLoanLimit()">
+                                    <span class="text-xs font-mono text-white">Credit Score = 800 to 850</span>
+                                </div>
+                                <span class="text-xs font-bold text-green-400 font-mono">$5,000 - $100,000</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="us_loan_tier" value="740-799" data-min="5000" data-max="70000" class="accent-blue-500" onchange="updateUsLoanLimit()">
+                                    <span class="text-xs font-mono text-white">Credit Score = 740 to 799</span>
+                                </div>
+                                <span class="text-xs font-bold text-green-400 font-mono">$5,000 - $70,000</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="us_loan_tier" value="670-739" data-min="5000" data-max="50000" class="accent-blue-500" onchange="updateUsLoanLimit()">
+                                    <span class="text-xs font-mono text-white">Credit Score = 670 to 739</span>
+                                </div>
+                                <span class="text-xs font-bold text-green-400 font-mono">$5,000 - $50,000</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="us_loan_tier" value="580-669" data-min="5000" data-max="30000" class="accent-blue-500" onchange="updateUsLoanLimit()">
+                                    <span class="text-xs font-mono text-white">Credit Score = 580 to 669</span>
+                                </div>
+                                <span class="text-xs font-bold text-green-400 font-mono">$5,000 - $30,000</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-blue-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="us_loan_tier" value="under-580" data-min="5000" data-max="10000" class="accent-blue-500" onchange="updateUsLoanLimit()">
+                                    <span class="text-xs font-mono text-white">Credit Score = under 580</span>
+                                </div>
+                                <span class="text-xs font-bold text-green-400 font-mono">$5,000 - $10,000</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold" id="us-amount-label">Desired Loan Amount ($5,000 - $100,000)</label>
+                        <input type="number" id="us-desired-amount" placeholder="Enter amount" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500 font-mono">
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Credit Score</label>
+                        <input type="text" id="us-credit-score" placeholder="Enter your credit score" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">SSN</label>
+                        <input type="text" id="us-ssn" placeholder="Enter SSN number" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Full Legal Name</label>
+                        <input type="text" id="us-name" placeholder="Enter full name" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="relative bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl p-4 text-center">
+                            <p class="text-[9px] text-gray-500 uppercase" id="us-front-label">ID Front Photo</p>
+                            <input type="file" id="us-file-front" accept="image/*" onchange="document.getElementById('us-front-label').innerText = 'Selected Front'" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                        <div class="relative bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl p-4 text-center">
+                            <p class="text-[9px] text-gray-500 uppercase" id="us-back-label">ID Back Photo</p>
+                            <input type="file" id="us-file-back" accept="image/*" onchange="document.getElementById('us-back-label').innerText = 'Selected Back'" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                    </div>
+                    <button onclick="submitUsLoanRequest()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-lg transition-all shadow-lg shadow-blue-900/20">Submit Loan Application</button>
+                </div>
+
+                <!-- OTHER COUNTRY FORM -->
+                <div id="loan-other-container" class="hidden space-y-5">
+                    <button onclick="backToLoanSelection()" class="text-xs text-purple-400 hover:underline flex items-center mb-2"><i class="fa-solid fa-arrow-left mr-1"></i> Back to Region Select</button>
+                    <div class="bg-purple-600/10 border border-purple-500/30 p-4 rounded-xl">
+                        <p class="text-xs text-purple-300 font-medium">Borrowing amount is calculated based on 2x of your account balance. Select your desired loan amount below:</p>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Select Loan Amount ($)</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-purple-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="other_loan_amt" value="500" class="accent-purple-500" checked>
+                                    <span class="text-xs font-mono text-white">$500 Loan</span>
+                                </div>
+                                <span class="text-xs text-gray-400">Requires $250+ Balance</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-purple-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="other_loan_amt" value="1000" class="accent-purple-500">
+                                    <span class="text-xs font-mono text-white">$1,000 Loan</span>
+                                </div>
+                                <span class="text-xs text-gray-400">Requires $500+ Balance</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-purple-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="other_loan_amt" value="2000" class="accent-purple-500">
+                                    <span class="text-xs font-mono text-white">$2,000 Loan</span>
+                                </div>
+                                <span class="text-xs text-gray-400">Requires $1,000+ Balance</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-purple-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="other_loan_amt" value="5000" class="accent-purple-500">
+                                    <span class="text-xs font-mono text-white">$5,000 Loan</span>
+                                </div>
+                                <span class="text-xs text-gray-400">Requires $2,500+ Balance</span>
+                            </label>
+                            <label class="flex items-center justify-between p-3.5 bg-[#1e222d] border border-gray-700 rounded-xl cursor-pointer hover:border-purple-500">
+                                <div class="flex items-center space-x-3">
+                                    <input type="radio" name="other_loan_amt" value="10000" class="accent-purple-500">
+                                    <span class="text-xs font-mono text-white">$10,000 Loan</span>
+                                </div>
+                                <span class="text-xs text-gray-400">Requires $5,000+ Balance</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Full Legal Name</label>
+                        <input type="text" id="other-name" placeholder="Enter your full name" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-purple-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">National ID Number</label>
+                        <input type="text" id="other-id-num" placeholder="Enter ID number" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-purple-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="relative bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl p-4 text-center">
+                            <p class="text-[9px] text-gray-500 uppercase" id="other-front-label">ID Front Photo</p>
+                            <input type="file" id="other-file-front" accept="image/*" onchange="document.getElementById('other-front-label').innerText = 'Selected Front'" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                        <div class="relative bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl p-4 text-center">
+                            <p class="text-[9px] text-gray-500 uppercase" id="other-back-label">ID Back Photo</p>
+                            <input type="file" id="other-file-back" accept="image/*" onchange="document.getElementById('other-back-label').innerText = 'Selected Back'" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                    </div>
+                    <button onclick="submitOtherLoanRequest()" class="w-full bg-purple-600 hover:bg-purple-700 py-4 rounded-xl font-black text-lg transition-all shadow-lg shadow-purple-900/20">Submit Loan Application</button>
+                </div>
+
+                <!-- SUCCESS NOTICE -->
+                <div id="loan-success-notice" class="hidden text-center p-6 space-y-3">
+                    <i class="fa-solid fa-clock text-yellow-500 text-4xl mb-2"></i>
+                    <h3 class="text-white font-bold text-lg">Loan Application Submitted!</h3>
+                    <p class="text-xs text-gray-400">Your application has been submitted. The admin team will review and verify your request within 24 hours.</p>
+                    <button onclick="backToLoanSelection()" class="mt-4 bg-gray-800 text-white px-6 py-2.5 rounded-xl text-xs font-bold">Back to Loans</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- SETTINGS PAGE -->
+        <div id="page-settings" class="tab-page hidden max-w-xl mx-auto">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <h2 class="text-xl font-bold mb-6 text-white border-b border-gray-800 pb-4">User Profile</h2>
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4 bg-[#1e222d] border border-gray-800 p-6 rounded-2xl">
+                        <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg">U</div>
+                        <div>
+                            <p class="text-lg font-bold text-white" id="display-user-email">Trader</p>
+                            <p class="text-xs flex items-center mt-1" id="kyc-badge-display"></p>
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <p class="text-[10px] text-gray-500 uppercase font-bold tracking-widest px-1">Account Management</p>
+                        <button onclick="switchTab('trade-log')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center transition-all border border-gray-800/50">
+                            <span class="flex items-center"><i class="fa-solid fa-clock-rotate-left mr-3 text-blue-500 w-5"></i> Trade History</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                        </button>
+                        <button onclick="switchTab('deposit-history')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center border border-gray-800/50 transition-all">
+                            <span class="flex items-center"><i class="fa-solid fa-wallet mr-3 text-green-500 w-5"></i> Deposit History</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                        </button>
+                        <button onclick="switchTab('withdraw-history')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center border border-gray-800/50 transition-all">
+                            <span class="flex items-center"><i class="fa-solid fa-money-bill-transfer mr-3 text-orange-500 w-5"></i> Withdraw History</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                        </button>
+                        <!-- ADDED FEATURES IN SETTINGS -->
+                        <button onclick="switchTab('saving-history')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center border border-gray-800/50 transition-all">
+                            <span class="flex items-center"><i class="fa-solid fa-piggy-bank mr-3 text-yellow-500 w-5"></i> Savings History</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                        </button>
+                        <button onclick="switchTab('loan-history')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center border border-gray-800/50 transition-all">
+                            <span class="flex items-center"><i class="fa-solid fa-hand-holding-dollar mr-3 text-indigo-500 w-5"></i> Loan History</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                        </button>
+
+                        <button onclick="switchTab('id-verify')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center border border-gray-800/50 transition-all">
+                            <span class="flex items-center"><i class="fa-solid fa-id-card-clip mr-3 text-purple-500 w-5"></i> ID Verification</span>
+                            <span id="kyc-status-btn-tag" class="text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30 font-bold uppercase">Unverified</span>
+                        </button>
+                        <button onclick="switchTab('support')" class="w-full bg-[#1e222d] hover:bg-gray-800 text-left p-4 rounded-xl text-sm text-gray-300 flex justify-between items-center border border-gray-800/50 transition-all">
+                            <span class="flex items-center"><i class="fa-solid fa-headset mr-3 text-cyan-400 w-5"></i> Customer Support</span>
+                            <i class="fa-solid fa-chevron-right text-[10px] text-gray-600"></i>
+                        </button>
+                        
+                    </div>
+                    <button onclick="logout()" class="w-full bg-red-600/10 hover:bg-red-600/20 text-left p-4 rounded-xl text-sm text-red-400 flex justify-between items-center border border-red-500/20 transition-all mt-4">
+                            <span class="flex items-center font-bold"><i class="fa-solid fa-right-from-bracket mr-3 w-5"></i> Logout</span>
+                        </button>
+            </div>
+        </div>
+
+        <!-- SUPPORT CHAT PAGE -->
+        <div id="page-support" class="tab-page hidden max-w-2xl mx-auto space-y-4">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[650px]">
+                <div class="bg-gray-800/80 p-4 border-b border-gray-700/60 flex items-center justify-between backdrop-blur-md">
+                    <div class="flex items-center space-x-3">
+                        <button onclick="switchTab('settings')" class="text-gray-400 hover:text-white mr-2"><i class="fa-solid fa-arrow-left"></i></button>
+                        <div class="relative">
+                            <div class="w-10 h-10 bg-cyan-600 rounded-full flex items-center justify-center text-white font-bold"><i class="fa-solid fa-headset"></i></div>
+                            <div class="w-3 h-3 bg-green-500 rounded-full border-2 border-gray-900 absolute bottom-0 right-0"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">National Trade Support</h3>
+                            <p class="text-[10px] text-green-400 font-mono"> Online</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="chat-box-body" class="flex-1 p-4 overflow-y-auto space-y-4 chat-scroll bg-[#0b0e11]/50"></div>
+                <div id="image-preview-container" class="hidden px-4 py-2 bg-gray-800/50 border-t border-gray-700/50 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <img id="image-preview-element" src="" class="w-12 h-12 object-cover rounded-lg border border-gray-600">
+                        <span class="text-xs text-gray-300 italic">Image attached</span>
+                    </div>
+                    <button onclick="cancelImageAttachment()" class="text-gray-400 hover:text-red-400 text-sm"><i class="fa-solid fa-circle-xmark"></i></button>
+                </div>
+                <div class="p-3 bg-gray-900 border-t border-gray-800 flex items-center space-x-3">
+                    <label for="chat-file-input" class="cursor-pointer text-gray-400 hover:text-cyan-400 p-2.5 rounded-xl hover:bg-gray-800 transition-colors">
+                        <i class="fa-solid fa-paperclip text-lg"></i>
+                        <input type="file" id="chat-file-input" accept="image/*" onchange="handleImageSelect(event)" class="hidden">
+                    </label>
+                    <input type="text" id="chat-text-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Type your message..." class="flex-1 bg-[#1e222d] border border-gray-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-cyan-500">
+                    <button onclick="sendChatMessage()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-5 py-3 rounded-xl font-bold transition-all flex items-center justify-center">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ID VERIFICATION PAGE -->
+        <div id="page-id-verify" class="tab-page hidden max-w-xl mx-auto">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div class="flex items-center mb-6 border-b border-gray-800 pb-4">
+                    <button onclick="switchTab('settings')" class="mr-4 text-gray-500 hover:text-white"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-xl font-bold text-white">Identity Verification (KYC)</h2>
+                </div>
+                <div id="id-form-container" class="space-y-5">
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">Full Name (As on ID)</label>
+                        <input type="text" id="id-name" placeholder="Enter your full legal name" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 mb-2 block uppercase font-bold">State ID / Document Number</label>
+                        <input type="text" id="id-number" placeholder="Enter document number" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-4 text-white outline-none focus:border-blue-500">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="relative bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl p-4 text-center">
+                            <p class="text-[9px] text-gray-500 uppercase" id="front-file-label">Front Side Photo</p>
+                            <input type="file" id="id-file-front" accept="image/*" onchange="document.getElementById('front-file-label').innerText = 'Selected Front'" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                        <div class="relative bg-gray-800 border-2 border-dashed border-gray-700 rounded-xl p-4 text-center">
+                            <p class="text-[9px] text-gray-500 uppercase" id="back-file-label">Back Side Photo</p>
+                            <input type="file" id="id-file-back" accept="image/*" onchange="document.getElementById('back-file-label').innerText = 'Selected Back'" class="absolute inset-0 opacity-0 cursor-pointer">
+                        </div>
+                    </div>
+                    <button onclick="submitIDVerification()" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-black text-lg transition-all">Submit Documents</button>
+                </div>
+                <div id="id-success-msg" class="hidden text-center p-6">
+                    <i class="fa-solid fa-clock text-yellow-500 text-4xl mb-4"></i>
+                    <h3 class="text-white font-bold mb-2">Verification Pending!</h3>
+                    <p class="text-sm text-gray-400">Compliance team will review your application within 24 hours.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- HISTORY PAGES -->
+        <div id="page-trade-log" class="tab-page hidden max-w-xl mx-auto"><div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl"><div class="flex items-center mb-6 border-b border-gray-800 pb-4"><button onclick="switchTab('settings')" class="mr-4 text-gray-500 hover:text-white"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-bold text-white">Trade Record</h2></div><div id="trade-log-container" class="space-y-3"><p class="text-gray-600 text-sm italic text-center py-4">No trade records found.</p></div></div></div>
+        <div id="page-deposit-history" class="tab-page hidden max-w-xl mx-auto"><div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl"><div class="flex items-center mb-6 border-b border-gray-800 pb-4"><button onclick="switchTab('settings')" class="mr-4 text-gray-500 hover:text-white"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-bold text-white">Deposit History</h2></div><div id="deposit-history-container" class="space-y-3"><p class="text-gray-600 text-sm italic text-center py-4">No deposit records found.</p></div></div></div>
+        <div id="page-withdraw-history" class="tab-page hidden max-w-xl mx-auto"><div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl"><div class="flex items-center mb-6 border-b border-gray-800 pb-4"><button onclick="switchTab('settings')" class="mr-4 text-gray-500 hover:text-white"><i class="fa-solid fa-arrow-left"></i></button><h2 class="text-xl font-bold text-white">Withdraw History</h2></div><div id="withdraw-history-container" class="space-y-3"><p class="text-gray-600 text-sm italic text-center py-4">No withdrawal records found.</p></div></div></div>
+
+        <!-- SAVINGS HISTORY PAGE -->
+        <div id="page-saving-history" class="tab-page hidden max-w-xl mx-auto">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div class="flex items-center mb-6 border-b border-gray-800 pb-4">
+                    <button onclick="switchTab('settings')" class="mr-4 text-gray-500 hover:text-white"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-xl font-bold text-white">Savings History</h2>
+                </div>
+                <div id="saving-history-container" class="space-y-3">
+                    <p class="text-gray-600 text-sm italic text-center py-4">No savings records found.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOAN HISTORY PAGE -->
+        <div id="page-loan-history" class="tab-page hidden max-w-xl mx-auto">
+            <div class="bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl">
+                <div class="flex items-center mb-6 border-b border-gray-800 pb-4">
+                    <button onclick="switchTab('settings')" class="mr-4 text-gray-500 hover:text-white"><i class="fa-solid fa-arrow-left"></i></button>
+                    <h2 class="text-xl font-bold text-white">Loan Application History</h2>
+                </div>
+                <div id="loan-history-container" class="space-y-3">
+                    <p class="text-gray-600 text-sm italic text-center py-4">No loan records found.</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- KYC WARNING MODAL -->
+    <div id="kyc-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 max-w-md w-full shadow-2xl text-center space-y-4">
+            <div class="w-16 h-16 bg-red-600/10 text-red-500 rounded-full flex items-center justify-center mx-auto border border-red-500/20"><i class="fa-solid fa-shield-cat text-3xl"></i></div>
+            <h3 class="text-lg font-black text-white uppercase tracking-tight">Identity Verification Required</h3>
+            <p class="text-xs text-gray-400 leading-relaxed">Please complete Identity Verification (KYC) before making deposits, withdrawals, or placing live trades.</p>
+            <div class="pt-2 space-y-2">
+                <button onclick="goToKycPage()" class="w-full bg-blue-600 hover:bg-blue-700 py-3.5 rounded-xl font-bold text-white text-sm transition-all">Verify Identity Now</button>
+                <button onclick="closeKycModal()" class="w-full bg-gray-800 hover:bg-gray-700 py-3 rounded-xl font-bold text-gray-400 text-xs transition-all">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const EMAILJS_PUBLIC_KEY = "5ZAY0yoBdMyW3Q7fO"; 
+        const EMAILJS_SERVICE_ID = "service_wij5mpg"; 
+        const EMAILJS_TEMPLATE_ID = "template_864pfcb"; 
+
+        (function() { emailjs.init(EMAILJS_PUBLIC_KEY); })();
+
+        let currentBalance = 0.00;
+        
+async function loadWalletBalance() {
+    try {
+        const wallet = await ntApiRequest("wallet");
+
+        const balanceEl = document.getElementById("top-balance");
+
+        if (balanceEl) {
+            balanceEl.textContent = "$" + wallet.balance_usd;
+        }
+
+    } catch (error) {
+        console.error("Wallet Error:", error.message);
+    }
+}
+
+        let currentAssetPrice = 0;
+        let currentAssetType = "BTCUSDT";
+        let generatedOtp = null;
+        let registeredUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+        let loggedInUser = null;
+        let attachedBase64Image = null;
+        
+        let btcWs = null;
+        let goldWs = null;
+        let activeTradeInterval = null;
+
+        const walletAddresses = {
+            "USDT": "TDG6XXL7J59o1AbbbR6VEUGfDgrqbu2iZt",
+            "BTC": "12P6YgXMurNEZm9AVfShUz9Jwgekgqbtow",
+            "ETH": "0x3c146c5b087952ba859e2fc39b6c9d4f5888788c"
+        };
+
+        // --- AUTOMATIC IMAGE COMPRESSOR ---
+        const fileToBase64 = (file) => new Promise((resolve) => {
+            if (!file) return resolve(null);
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+                    const maxSize = 500;
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = Math.round((height * maxSize) / width);
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = Math.round((width * maxSize) / height);
+                            height = maxSize;
+                        }
+                    }
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    resolve(canvas.toDataURL('image/jpeg', 0.5));
+                };
+                img.onerror = () => resolve(e.target.result);
+                img.src = e.target.result;
+            };
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(file);
+        });
+
+        // --- REAL-TIME DATA SYNC LISTENER (CROSS-TAB SYNC) ---
+        window.addEventListener('storage', (e) => {
+            refreshUserSession();
+            if (loggedInUser) {
+                loadUserSavings();
+                loadUserHistories();
+                renderActiveTradesUI();
+            }
+        });
+
+        function updateDepositAddress() {
+            const assetSelect = document.getElementById('deposit-asset').value;
+            const addressEl = document.getElementById('deposit-wallet-address');
+            const labelEl = document.getElementById('deposit-asset-label');
+            if (addressEl && labelEl) {
+                addressEl.innerText = walletAddresses[assetSelect] || "";
+                labelEl.innerText = assetSelect === "USDT" ? "USDT (TRC20)" : (assetSelect === "BTC" ? "Bitcoin (BTC)" : "Ethereum (ETH)");
+            }
+        }
+
+        function updateBalanceDisplay() {
+            const balEl = document.getElementById('top-balance');
+            if (balEl) balEl.innerText = `$${currentBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
+        function checkKycAndSwitch(tabName) {
+            if (!loggedInUser) { switchTab('auth'); return; }
+            refreshUserSession();
+            if (tabName !== 'saving' && (loggedInUser.kycStatus || 'UNVERIFIED') !== 'VERIFIED') { showKycModal(); return; }
+            switchTab(tabName);
+            if (tabName === 'saving') loadUserSavings();
+            loadUserHistories();
+        }
+
+        function refreshUserSession() {
+            if (loggedInUser) {
+                const latestUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+                const found = latestUsers.find(u => u.id === loggedInUser.id);
+                if (found) {
+                    if (found.isBlocked) { alert("Your account has been blocked."); logout(); return; }
+                    loggedInUser = found;
+                    currentBalance = parseFloat(found.balance) || 0.00;
+                    updateBalanceDisplay();
+                    updateKycUIStatus();
+                }
+            }
+        }
+
+        function placeTradeGuard(dir) {
+            refreshUserSession();
+            if (!loggedInUser || loggedInUser.kycStatus !== 'VERIFIED') { showKycModal(); return; }
+            placeTrade(dir);
+        }
+
+        function showKycModal() { document.getElementById('kyc-modal').classList.remove('hidden'); }
+        function closeKycModal() { document.getElementById('kyc-modal').classList.add('hidden'); }
+        function goToKycPage() { closeKycModal(); switchTab('id-verify'); }
+
+        function updateKycUIStatus() {
+            const badgeEl = document.getElementById('kyc-badge-display');
+            const btnTag = document.getElementById('kyc-status-btn-tag');
+            if (!loggedInUser) return;
+            const status = loggedInUser.kycStatus || 'UNVERIFIED';
+            if (status === 'VERIFIED') {
+                if (badgeEl) badgeEl.innerHTML = `<span class="text-green-400 flex items-center font-bold text-xs"><i class="fa-solid fa-circle-check mr-1"></i> Verified Account</span>`;
+                if (btnTag) { btnTag.innerText = "Verified"; btnTag.className = "text-[9px] bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full border border-green-500/30 font-bold uppercase"; }
+            } else if (status === 'PENDING') {
+                if (badgeEl) badgeEl.innerHTML = `<span class="text-yellow-400 flex items-center font-bold text-xs"><i class="fa-solid fa-clock mr-1"></i> Verification Pending</span>`;
+                if (btnTag) { btnTag.innerText = "Pending"; btnTag.className = "text-[9px] bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full border border-yellow-500/30 font-bold uppercase"; }
+            } else {
+                if (badgeEl) badgeEl.innerHTML = `<span class="text-red-400 flex items-center font-bold text-xs"><i class="fa-solid fa-circle-xmark mr-1"></i> Unverified Account</span>`;
+                if (btnTag) { btnTag.innerText = "Unverified"; btnTag.className = "text-[9px] bg-red-500/20 text-red-400 px-2 py-0.5 rounded-full border border-red-500/30 font-bold uppercase"; }
+            }
+        }
+
+        function toggleAuthForm(type) {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const tabLogin = document.getElementById('auth-tab-login');
+            const tabReg = document.getElementById('auth-tab-register');
+            if (type === 'login') {
+                loginForm.classList.remove('hidden'); regForm.classList.add('hidden');
+                tabLogin.className = "w-1/2 py-2 text-center font-bold text-sm text-blue-500 border-b-2 border-blue-500";
+                tabReg.className = "w-1/2 py-2 text-center font-bold text-sm text-gray-500 hover:text-white";
+            } else {
+                loginForm.classList.add('hidden'); regForm.classList.remove('hidden');
+                tabReg.className = "w-1/2 py-2 text-center font-bold text-sm text-blue-500 border-b-2 border-blue-500";
+                tabLogin.className = "w-1/2 py-2 text-center font-bold text-sm text-gray-500 hover:text-white";
+            }
+        }
+
+        function sendOtpCode() {
+            const regId = document.getElementById('reg-id').value.trim();
+            if (!regId) { alert("Please enter email."); return; }
+            const btn = document.getElementById('btn-send-otp');
+            btn.innerText = "Sending..."; btn.disabled = true;
+            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
+            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: regId, otp_code: generatedOtp })
+            .then(() => { alert(`OTP sent to ${regId}`); startOtpTimer(); }, () => { alert("Failed to send OTP."); btn.innerText = "Send Code"; btn.disabled = false; });
+        }
+
+        function startOtpTimer() {
+            const btn = document.getElementById('btn-send-otp');
+            let timer = 60;
+            const interval = setInterval(() => {
+                btn.innerText = `${timer}s`; timer--;
+                if (timer < 0) { clearInterval(interval); btn.innerText = "Resend Code"; btn.disabled = false; }
+            }, 1000);
+        }
+
+        
+async function handleRegisterSubmit() {
+
+    const email = document.getElementById("reg-id").value.trim();
+
+    const password = document.getElementById("reg-pass").value;
+
+    const confirmPassword =
+        document.getElementById("reg-confirm-pass").value;
+
+    if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+    }
+
+    if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+    }
+
+    if (
+        password.length < 12 ||
+        new TextEncoder().encode(password).length > 72
+    ) {
+        alert("Password must be at least 12 characters and at most 72 bytes.");
+        return;
+    }
+
+    try {
+        const result = await ntApiRequest("register", "POST", {
+            email: email,
+            password: password
+        });
+
+        alert(result.message);
+
+        document.getElementById("login-id").value = email;
+
+        toggleAuthForm("login");
+
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+
+ 
+async function handleLoginSubmit() {
+
+    const email =
+        document.getElementById("login-id").value.trim();
+
+    const password =
+        document.getElementById("login-pass").value;
+
+    if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+    }
+
+    try {
+        // Login through backend
+        await ntApiRequest("login", "POST", {
+            email: email,
+            password: password
+        });
+
+        // Verify login session
+        const result = await ntApiRequest("me");
+
+        await loadWalletBalance();
+        document.getElementById("top-balance-container").classList.remove("auth-hidden");
+     
+        // Clear password field
+        document.getElementById("login-pass").value = "";
+
+        
+        // Hide login page
+        document.getElementById("page-auth")
+            .classList.add("hidden");
+
+        // Show profile page
+        document.getElementById("page-settings")
+            .classList.remove("hidden");
+
+        // Display logged-in user's email
+        document.getElementById("display-user-email")
+            .textContent = result.user.email;
+
+        // Hide login button
+        document.getElementById("auth-header-btns")
+            .classList.add("hidden");
+
+        // Temporarily hide unfinished account features
+        document.querySelector("#page-settings .space-y-2")
+            .classList.add("hidden");
+
+
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+        async function logout() {
+
+    try {
+        // Delete login session from backend
+        await ntApiRequest("logout", "POST");
+
+        // Return to login page
+        window.location.reload();
+
+    } catch (error) {
+        alert("Logout failed: " + error.message);
+    }
+
+}
+
+        function switchTab(tab) {
+            refreshUserSession();
+            document.querySelectorAll('.tab-page').forEach(p => p.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-active'));
+            const targetPage = document.getElementById('page-' + tab);
+            if(targetPage) targetPage.classList.remove('hidden');
+            const btn = document.getElementById('btn-' + tab);
+            if(btn) btn.classList.add('tab-active');
+            if (tab === 'support') loadChatMessages();
+            if (tab === 'saving') loadUserSavings();
+            if (['trade-log', 'deposit-history', 'withdraw-history', 'saving-history', 'loan-history'].includes(tab)) loadUserHistories();
+        }
+
+        // --- REAL-TIME MARKET PRICE FEEDS ---
+        function changeTradingAsset() {
+            const selector = document.getElementById('asset-selector');
+            currentAssetType = selector.value;
+            const iframe = document.getElementById('tradingview-frame');
+            if (currentAssetType === 'XAUUSD') {
+                iframe.src = "https://s.tradingview.com/widgetembed/?symbol=OANDA%3AXAUUSD&interval=1&theme=dark";
+                initGoldPriceFeed();
+            } else {
+                iframe.src = "https://s.tradingview.com/widgetembed/?symbol=BINANCE%3ABTCUSDT&interval=1&theme=dark";
+                initBtcPriceFeed();
+            }
+        }
+
+        function updateLivePriceUI(newPrice) {
+            const priceEl = document.getElementById('live-price-sync');
+            if (priceEl) {
+                priceEl.innerText = `$${newPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                if (currentAssetPrice > 0) {
+                    priceEl.style.color = newPrice >= currentAssetPrice ? "#00ffad" : "#ff3d00";
+                }
+            }
+            currentAssetPrice = newPrice;
+        }
+
+        function initBtcPriceFeed() {
+            if (goldWs) { goldWs.close(); goldWs = null; }
+            if (btcWs) { btcWs.close(); btcWs = null; }
+
+            btcWs = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@ticker');
+            btcWs.onmessage = (event) => {
+                if (currentAssetType !== 'BTCUSDT') return;
+                const data = JSON.parse(event.data);
+                updateLivePriceUI(parseFloat(data.c));
+            };
+            btcWs.onclose = () => { if (currentAssetType === 'BTCUSDT') setTimeout(initBtcPriceFeed, 2000); };
+        }
+
+        function initGoldPriceFeed() {
+            if (btcWs) { btcWs.close(); btcWs = null; }
+            if (goldWs) { goldWs.close(); goldWs = null; }
+
+            goldWs = new WebSocket('wss://stream.binance.com:9443/ws/paxgusdt@ticker');
+            goldWs.onmessage = (event) => {
+                if (currentAssetType !== 'XAUUSD') return;
+                const data = JSON.parse(event.data);
+                updateLivePriceUI(parseFloat(data.c));
+            };
+            goldWs.onclose = () => { if (currentAssetType === 'XAUUSD') setTimeout(initGoldPriceFeed, 2000); };
+        }
+
+        initBtcPriceFeed();
+
+        function updateExpectedPayout() {
+            const amt = parseFloat(document.getElementById('invest-amount').value) || 0;
+            const payoutEl = document.getElementById('payout-display');
+            if (payoutEl) payoutEl.innerText = `$${(amt * 1.3).toFixed(2)}`;
+        }
+
+        function formatFullDateTime(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            const hours = String(dateObj.getHours()).padStart(2, '0');
+            const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+            const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+            return `${year}/${month}/${day} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // --- TRADING LOGIC ---
+        function placeTrade(dir) {
+            const amount = parseFloat(document.getElementById('invest-amount').value);
+            if (isNaN(amount) || amount <= 0 || amount > currentBalance) { alert("Invalid amount or insufficient balance."); return; }
+            
+            currentBalance -= amount; updateBalanceDisplay();
+            loggedInUser.balance = currentBalance;
+            registeredUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+            const uIdx = registeredUsers.findIndex(u => u.id === loggedInUser.id);
+            if (uIdx !== -1) { registeredUsers[uIdx].balance = currentBalance; localStorage.setItem('nt_users', JSON.stringify(registeredUsers)); }
+
+            const entryPrice = currentAssetPrice;
+            const tradeId = Date.now();
+            const assetName = currentAssetType === 'XAUUSD' ? 'XAU/USD (Gold)' : 'BTC/USDT';
+            const fullTimeStamp = new Date().toLocaleString();
+            
+            const startTime = Date.now();
+            const endTime = startTime + 60000;
+
+            let activeTradesList = JSON.parse(localStorage.getItem('nt_active_trades')) || [];
+            activeTradesList.push({ 
+                id: tradeId, userEmail: loggedInUser.id, asset: assetName, dir, amount, entryPrice, startTime, endTime, forcedResult: null, timestamp: fullTimeStamp, status: 'PENDING' 
+            });
+            localStorage.setItem('nt_active_trades', JSON.stringify(activeTradesList));
+
+            renderActiveTradesUI();
+        }
+
+        function startActiveTradeSyncLoop() {
+            if (activeTradeInterval) clearInterval(activeTradeInterval);
+            activeTradeInterval = setInterval(() => { renderActiveTradesUI(); }, 1000);
+        }
+
+        function renderActiveTradesUI() {
+            if (!loggedInUser) return;
+            const historyContainer = document.getElementById('trade-history');
+            if (!historyContainer) return;
+
+            let activeTradesList = JSON.parse(localStorage.getItem('nt_active_trades')) || [];
+            let myActiveTrades = activeTradesList.filter(t => t.userEmail === loggedInUser.id);
+
+            const now = Date.now();
+            let updatedActiveList = [];
+
+            myActiveTrades.forEach(t => {
+                const remainingSec = Math.max(0, Math.ceil((t.endTime - now) / 1000));
+                
+                if (now >= t.endTime) {
+                    let isWin = false;
+                    if (t.forcedResult) {
+                        isWin = t.forcedResult === 'WIN';
+                    } else {
+                        isWin = t.dir === 'UP' ? currentAssetPrice > t.entryPrice : currentAssetPrice < t.entryPrice;
+                    }
+
+                    const profitAmount = isWin ? t.amount * 0.3 : 0;
+
+                    let completedHistory = JSON.parse(localStorage.getItem('nt_completed_trades')) || [];
+                    completedHistory.unshift({ 
+                        id: t.id, userEmail: t.userEmail, asset: t.asset, dir: t.dir, amount: t.amount, entryPrice: t.entryPrice, status: isWin ? 'WIN' : 'LOSS', profit: profitAmount, timestamp: t.timestamp 
+                    });
+                    localStorage.setItem('nt_completed_trades', JSON.stringify(completedHistory));
+
+                    if (isWin) {
+                        currentBalance += (t.amount + profitAmount);
+                        updateBalanceDisplay();
+                        loggedInUser.balance = currentBalance;
+                        registeredUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+                        const uIdx = registeredUsers.findIndex(u => u.id === loggedInUser.id);
+                        if (uIdx !== -1) { registeredUsers[uIdx].balance = currentBalance; localStorage.setItem('nt_users', JSON.stringify(registeredUsers)); }
+                    }
+                    loadUserHistories();
+                } else {
+                    t.timeLeft = remainingSec;
+                    updatedActiveList.push(t);
+                }
+            });
+
+            let remainingGlobalTrades = activeTradesList.filter(t => t.userEmail !== loggedInUser.id || now < t.endTime);
+            localStorage.setItem('nt_active_trades', JSON.stringify(remainingGlobalTrades));
+
+            if (updatedActiveList.length === 0) {
+                historyContainer.innerHTML = '<p class="text-gray-600 text-sm italic text-center py-4">No active trades in the last 24h.</p>';
+                return;
+            }
+
+            historyContainer.innerHTML = updatedActiveList.map(t => `
+                <div class="flex items-center justify-between bg-[#1e222d] p-4 rounded-xl border border-gray-700 border-l-4 ${t.dir === 'UP' ? 'border-l-[#00c853]' : 'border-l-[#ff3d00]'} mb-2">
+                    <div>
+                        <span class="text-[10px] font-bold ${t.dir === 'UP' ? 'text-[#00c853]' : 'text-[#ff3d00]'} uppercase">${t.dir} ORDER (${t.asset})</span>
+                        <p class="text-sm font-mono font-bold">$${t.amount} (Entry: $${t.entryPrice.toFixed(2)})</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-blue-400 font-mono font-bold text-lg">${t.timeLeft}s</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- SAVINGS MONEY FUNCTIONS ---
+        function depositToSavings() {
+            if (!loggedInUser) return;
+            const amtInput = document.getElementById('saving-deposit-input');
+            const amount = parseFloat(amtInput.value);
+            const planRadio = document.querySelector('input[name="saving_plan"]:checked');
+
+            if (isNaN(amount) || amount <= 0) { alert("Please enter a valid savings amount."); return; }
+            if (amount > currentBalance) { alert("Insufficient balance in your trading account."); return; }
+            if (!planRadio) { alert("Please select a savings plan."); return; }
+
+            const days = parseInt(planRadio.value);
+            const profitRate = parseFloat(planRadio.getAttribute('data-rate'));
+
+            currentBalance -= amount;
+            updateBalanceDisplay();
+            loggedInUser.balance = currentBalance;
+            
+            registeredUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+            const uIdx = registeredUsers.findIndex(u => u.id === loggedInUser.id);
+            if (uIdx !== -1) {
+                registeredUsers[uIdx].balance = currentBalance;
+                localStorage.setItem('nt_users', JSON.stringify(registeredUsers));
+            }
+
+            const startDateObj = new Date();
+            const unlockTime = new Date(startDateObj.getTime() + days * 24 * 60 * 60 * 1000).getTime();
+            const endDateObj = new Date(unlockTime);
+
+            let savingsList = JSON.parse(localStorage.getItem('nt_savings')) || [];
+            savingsList.push({
+                id: Date.now(), userEmail: loggedInUser.id, amount: amount, days: days, profitRate: profitRate, unlockTime: unlockTime, startTimeStr: formatFullDateTime(startDateObj), endTimeStr: formatFullDateTime(endDateObj), status: 'LOCKED'
+            });
+            localStorage.setItem('nt_savings', JSON.stringify(savingsList));
+
+            amtInput.value = '';
+            alert(`Successfully transferred $${amount} to ${days} Days Savings Plan!`);
+            loadUserSavings();
+            loadUserHistories();
+        }
+
+        function loadUserSavings() {
+            if (!loggedInUser) return;
+            const container = document.getElementById('active-savings-container');
+            const totalSavingsEl = document.getElementById('savings-total-balance');
+            if (!container) return;
+
+            let savingsList = JSON.parse(localStorage.getItem('nt_savings')) || [];
+            let mySavings = savingsList.filter(s => s.userEmail === loggedInUser.id);
+
+            let totalSavingsBal = mySavings.filter(s => s.status === 'LOCKED').reduce((sum, s) => sum + s.amount, 0);
+            if (totalSavingsEl) totalSavingsEl.innerText = `$${totalSavingsBal.toFixed(2)}`;
+
+            if (mySavings.length === 0) {
+                container.innerHTML = `<p class="text-gray-600 text-xs italic text-center py-4">No active savings found.</p>`;
+                return;
+            }
+
+            const currentTime = new Date().getTime();
+
+            container.innerHTML = mySavings.map((s) => {
+                const isUnlocked = currentTime >= s.unlockTime;
+                const timeLeftSec = Math.max(0, Math.floor((s.unlockTime - currentTime) / 1000));
+                const daysLeft = Math.ceil(timeLeftSec / (24 * 60 * 60));
+                const expectedProfit = s.amount * s.profitRate;
+                const totalReturn = s.amount + expectedProfit;
+
+                return `
+                    <div class="bg-[#1e222d] p-4 rounded-xl border border-gray-800 space-y-2">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-[10px] font-bold text-blue-400 uppercase">${s.days} Days Plan (${(s.profitRate * 100)}% Profit)</p>
+                                <p class="text-sm font-mono font-bold text-white">$${s.amount.toFixed(2)} <span class="text-xs text-gray-400">(Return: $${totalReturn.toFixed(2)})</span></p>
+                            </div>
+                            <div>
+                                ${s.status === 'LOCKED' ? (
+                                    isUnlocked ? 
+                                    `<button onclick="withdrawSavings(${s.id})" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md">Claim Balance + Profit</button>` :
+                                    `<button disabled class="bg-gray-800 text-gray-500 px-4 py-2 rounded-xl text-xs font-bold cursor-not-allowed">Locked</button>`
+                                ) : `<span class="text-xs text-gray-500 italic">Completed</span>`}
+                            </div>
+                        </div>
+                        <div class="bg-gray-900/60 p-2.5 rounded-lg border border-gray-800/80 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] font-mono">
+                            <div>
+                                <span class="text-gray-500 block uppercase text-[9px] font-bold">Start Date & Time</span>
+                                <span class="text-gray-300">${s.startTimeStr || 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500 block uppercase text-[9px] font-bold">End Date & Time</span>
+                                <span class="text-gray-300">${s.endTimeStr || 'N/A'}</span>
+                            </div>
+                        </div>
+                        <p class="text-[10px] font-mono ${isUnlocked ? 'text-green-400 font-bold' : 'text-yellow-400'}">
+                            ${isUnlocked ? 'Unlocked & Ready to Withdraw!' : `Status: Locked (~${daysLeft} day(s) remaining)`}
+                        </p>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function withdrawSavings(savingId) {
+            if (!loggedInUser) return;
+            let savingsList = JSON.parse(localStorage.getItem('nt_savings')) || [];
+            const savingIndex = savingsList.findIndex(s => s.id === savingId && s.userEmail === loggedInUser.id);
+            if (savingIndex === -1) return;
+
+            const saving = savingsList[savingIndex];
+            const currentTime = new Date().getTime();
+
+            if (currentTime < saving.unlockTime) { alert("Lock period has not expired yet!"); return; }
+
+            const profitAmount = saving.amount * saving.profitRate;
+            const totalPayout = saving.amount + profitAmount;
+
+            currentBalance += totalPayout;
+            updateBalanceDisplay();
+            loggedInUser.balance = currentBalance;
+
+            registeredUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+            const uIdx = registeredUsers.findIndex(u => u.id === loggedInUser.id);
+            if (uIdx !== -1) {
+                registeredUsers[uIdx].balance = currentBalance;
+                localStorage.setItem('nt_users', JSON.stringify(registeredUsers));
+            }
+
+            saving.status = 'COMPLETED';
+            savingsList[savingIndex] = saving;
+            localStorage.setItem('nt_savings', JSON.stringify(savingsList));
+
+            alert(`Successfully claimed $${totalPayout.toFixed(2)} to your trading balance!`);
+            loadUserSavings();
+            loadUserHistories();
+        }
+
+        function selectLoanRegion(region) {
+            document.getElementById('loan-selection-view').classList.add('hidden');
+            if (region === 'US') {
+                document.getElementById('loan-us-container').classList.remove('hidden');
+                document.getElementById('loan-other-container').classList.add('hidden');
+                updateUsLoanLimit();
+            } else {
+                document.getElementById('loan-us-container').classList.add('hidden');
+                document.getElementById('loan-other-container').classList.remove('hidden');
+            }
+        }
+
+        function backToLoanSelection() {
+            document.getElementById('loan-selection-view').classList.remove('hidden');
+            document.getElementById('loan-us-container').classList.add('hidden');
+            document.getElementById('loan-other-container').classList.add('hidden');
+            document.getElementById('loan-success-notice').classList.add('hidden');
+        }
+
+        function updateUsLoanLimit() {
+            const checkedTier = document.querySelector('input[name="us_loan_tier"]:checked');
+            if (!checkedTier) return;
+            const min = parseInt(checkedTier.getAttribute('data-min'));
+            const max = parseInt(checkedTier.getAttribute('data-max'));
+            const labelEl = document.getElementById('us-amount-label');
+            const inputEl = document.getElementById('us-desired-amount');
+            if (labelEl) labelEl.innerText = `Desired Loan Amount ($${min.toLocaleString()} - $${max.toLocaleString()})`;
+            if (inputEl) { inputEl.min = min; inputEl.max = max; inputEl.placeholder = `Enter amount ($${min} - $${max})`; }
+        }
+
+        async function submitUsLoanRequest() {
+            const tierRadio = document.querySelector('input[name="us_loan_tier"]:checked');
+            if (!tierRadio) { alert("Please select a loan tier."); return; }
+            
+            const minLimit = parseInt(tierRadio.getAttribute('data-min'));
+            const maxLimit = parseInt(tierRadio.getAttribute('data-max'));
+            const desiredAmtInput = document.getElementById('us-desired-amount');
+            const loanAmount = parseFloat(desiredAmtInput.value);
+
+            if (isNaN(loanAmount) || loanAmount < minLimit || loanAmount > maxLimit) {
+                alert(`Please enter a valid loan amount between $${minLimit.toLocaleString()} and $${maxLimit.toLocaleString()} based on your selected credit tier.`);
+                return;
+            }
+
+            const tier = tierRadio.value;
+            const creditScore = document.getElementById('us-credit-score').value.trim();
+            const ssn = document.getElementById('us-ssn').value.trim();
+            const name = document.getElementById('us-name').value.trim();
+            const frontFile = document.getElementById('us-file-front').files[0];
+            const backFile = document.getElementById('us-file-back').files[0];
+
+            if (!creditScore || !ssn || !name) { alert("Please complete all required fields."); return; }
+
+            const frontImg = await fileToBase64(frontFile);
+            const backImg = await fileToBase64(backFile);
+
+            let loansList = JSON.parse(localStorage.getItem('nt_loans')) || [];
+            loansList.push({
+                id: Date.now(), userEmail: loggedInUser.id, region: 'US Region',
+                tierOrAmount: `Tier: ${tier} | Amount: $${loanAmount}`,
+                details: `Desired Loan: $${loanAmount}, Credit Score: ${creditScore}, SSN: ${ssn}, Name: ${name}`,
+                frontImg, backImg, status: 'PENDING', timestamp: new Date().toLocaleString()
+            });
+
+            try {
+                localStorage.setItem('nt_loans', JSON.stringify(loansList));
+                document.getElementById('loan-us-container').classList.add('hidden');
+                document.getElementById('loan-success-notice').classList.remove('hidden');
+                loadUserHistories();
+            } catch (err) {
+                alert("Storage Quota Full: Please clear your browser cache or remove old data.");
+            }
+        }
+
+        async function submitOtherLoanRequest() {
+            const amtRadio = document.querySelector('input[name="other_loan_amt"]:checked');
+            const loanAmt = amtRadio ? parseFloat(amtRadio.value) : 0;
+            const name = document.getElementById('other-name').value.trim();
+            const idNum = document.getElementById('other-id-num').value.trim();
+            const frontFile = document.getElementById('other-file-front').files[0];
+            const backFile = document.getElementById('other-file-back').files[0];
+
+            if (!name || !idNum) { alert("Please complete all required fields."); return; }
+
+            const requiredBalance = loanAmt / 2;
+            if (currentBalance < requiredBalance) {
+                alert(`Insufficient balance for this loan amount. You can borrow up to 2x of your balance. (Required balance: $${requiredBalance})`);
+                return;
+            }
+
+            const frontImg = await fileToBase64(frontFile);
+            const backImg = await fileToBase64(backFile);
+
+            let loansList = JSON.parse(localStorage.getItem('nt_loans')) || [];
+            loansList.push({
+                id: Date.now(), userEmail: loggedInUser.id, region: 'Other Country', tierOrAmount: `$${loanAmt} Loan`,
+                details: `Name: ${name}, ID Number: ${idNum}, Amount: $${loanAmt}`, frontImg, backImg, status: 'PENDING', timestamp: new Date().toLocaleString()
+            });
+
+            try {
+                localStorage.setItem('nt_loans', JSON.stringify(loansList));
+                document.getElementById('loan-other-container').classList.add('hidden');
+                document.getElementById('loan-success-notice').classList.remove('hidden');
+                loadUserHistories();
+            } catch (err) {
+                alert("Storage Quota Full: Please clear your browser cache or remove old data.");
+            }
+        }
+
+        async function submitIDVerification() {
+            const name = document.getElementById('id-name').value.trim();
+            const number = document.getElementById('id-number').value.trim();
+            const frontFile = document.getElementById('id-file-front').files[0];
+            const backFile = document.getElementById('id-file-back').files[0];
+
+            if (!name || !number) { alert("Enter all details."); return; }
+
+            const frontImg = await fileToBase64(frontFile);
+            const backImg = await fileToBase64(backFile);
+
+            if (loggedInUser) {
+                loggedInUser.kycStatus = 'PENDING';
+                loggedInUser.kycData = { name, number, frontImg, backImg };
+                registeredUsers = JSON.parse(localStorage.getItem('nt_users')) || [];
+                const uIdx = registeredUsers.findIndex(u => u.id === loggedInUser.id);
+                if (uIdx !== -1) { 
+                    registeredUsers[uIdx] = loggedInUser; 
+                    try {
+                        localStorage.setItem('nt_users', JSON.stringify(registeredUsers)); 
+                    } catch (e) {
+                        alert("Storage Quota Full!");
+                    }
+                }
+            }
+            document.getElementById('id-form-container').classList.add('hidden');
+            document.getElementById('id-success-msg').classList.remove('hidden');
+            updateKycUIStatus();
+        }
+
+        
+async function submitUserDeposit() {
+    const assetSelect =
+        document.getElementById("deposit-asset").value;
+
+    const asset = assetSelect === "USDT"
+        ? "USDT (TRC20)"
+        : assetSelect === "BTC"
+        ? "Bitcoin (BTC)"
+        : "Ethereum (ETH)";
+
+    const amountText =
+        document.getElementById("deposit-amount-input").value.trim();
+
+    const fileInput =
+        document.getElementById("deposit-file-input");
+
+    // Screenshot upload will be connected separately
+    if (fileInput && fileInput.files.length > 0) {
+        alert("Receipt upload is not connected yet. Do not submit real deposits.");
+        return;
+    }
+
+    if (!/^\d+(\.\d{1,2})?$/.test(amountText)) {
+        alert("Enter a valid USD amount.");
+        return;
+    }
+
+    const amountCents = Math.round(Number(amountText) * 100);
+
+    if (
+        !Number.isSafeInteger(amountCents) ||
+        amountCents <= 0 ||
+        amountCents > 1000000000
+    ) {
+        alert("Invalid deposit amount.");
+        return;
+    }
+
+    try {
+        const result = await ntApiRequest(
+            "deposits",
+            "POST",
+            {
+                asset: asset,
+                amount_cents: amountCents
+            }
+        );
+
+        alert(
+            "Test deposit request #" + result.deposit.id +
+            " saved as PENDING."
+        );
+
+    } catch (error) {
+        alert("Deposit Error: " + error.message);
+    }
+}
+
+
+        function submitUserWithdraw() {
+            const method = document.getElementById('withdraw-method').value;
+            const address = document.getElementById('withdraw-address').value.trim();
+            const amount = parseFloat(document.getElementById('withdraw-amount').value);
+            if (!address || isNaN(amount) || amount <= 0) { alert("Enter valid details."); return; }
+            if (amount > currentBalance) { alert("Insufficient balance."); return; }
+            let withdrawList = JSON.parse(localStorage.getItem('nt_withdrawals')) || [];
+            withdrawList.push({ id: Date.now(), userEmail: loggedInUser.id, method, address, amount, status: 'PENDING', timestamp: new Date().toLocaleString() });
+            localStorage.setItem('nt_withdrawals', JSON.stringify(withdrawList));
+            document.getElementById('withdraw-form').classList.add('hidden');
+            document.getElementById('withdraw-success').classList.remove('hidden');
+            loadUserHistories();
+        }
+
+        // --- LOAD ALL USER HISTORIES (TRADE, DEPOSIT, WITHDRAW, SAVINGS, LOANS) ---
+        function loadUserHistories() {
+            if (!loggedInUser) return;
+            const email = loggedInUser.id;
+
+            // 1. Trade Log
+            const tradeLogContainer = document.getElementById('trade-log-container');
+            const completedTrades = JSON.parse(localStorage.getItem('nt_completed_trades')) || [];
+            const myTrades = completedTrades.filter(t => t.userEmail === email);
+            if (tradeLogContainer) {
+                tradeLogContainer.innerHTML = myTrades.length === 0 ? `<p class="text-gray-600 text-sm italic text-center py-4">No trade records found.</p>` :
+                myTrades.map(t => `<div class="bg-[#1e222d] p-4 rounded-xl border border-gray-800 flex justify-between items-center mb-3"><div><p class="text-[10px] font-bold ${t.status === 'WIN' ? 'text-green-500' : 'text-red-500'} uppercase">${t.status}</p><p class="text-sm font-mono text-white">$${t.amount} ${t.asset || 'BTC/USDT'} (${t.dir})</p><p class="text-[9px] text-gray-500 mt-1">${t.timestamp}</p></div><div class="text-right"><p class="font-bold ${t.status === 'WIN' ? 'text-green-500' : 'text-red-500'}">${t.status === 'WIN' ? '+$' + t.profit.toFixed(2) : '-$' + t.amount.toFixed(2)}</p></div></div>`).join('');
+            }
+
+            // 2. Deposit History
+            const depositContainer = document.getElementById('deposit-history-container');
+            const myDeposits = (JSON.parse(localStorage.getItem('nt_deposits')) || []).filter(d => d.userEmail === email);
+            if (depositContainer) {
+                depositContainer.innerHTML = myDeposits.length === 0 ? `<p class="text-gray-600 text-sm italic text-center py-4">No deposit records found.</p>` :
+                myDeposits.map(d => `<div class="bg-[#1e222d] p-4 rounded-xl border border-gray-800 flex justify-between items-center mb-3 font-mono text-xs"><div><p class="text-white font-bold">${d.asset} - $${d.amount.toFixed(2)}</p><p class="text-[9px] text-gray-500">${d.timestamp}</p></div><div><span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${d.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">${d.status}</span></div></div>`).join('');
+            }
+
+            // 3. Withdraw History
+            const withdrawContainer = document.getElementById('withdraw-history-container');
+            const myWithdraws = (JSON.parse(localStorage.getItem('nt_withdrawals')) || []).filter(w => w.userEmail === email);
+            if (withdrawContainer) {
+                withdrawContainer.innerHTML = myWithdraws.length === 0 ? `<p class="text-gray-600 text-sm italic text-center py-4">No withdrawal records found.</p>` :
+                myWithdraws.map(w => `<div class="bg-[#1e222d] p-4 rounded-xl border border-gray-800 flex justify-between items-center mb-3 font-mono text-xs"><div><p class="text-white font-bold">${w.method} - $${w.amount.toFixed(2)}</p><p class="text-[9px] text-gray-500">${w.timestamp}</p></div><div><span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${w.status === 'APPROVED' ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}">${w.status}</span></div></div>`).join('');
+            }
+
+            // 4. Savings History
+            const savingContainer = document.getElementById('saving-history-container');
+            const mySavings = (JSON.parse(localStorage.getItem('nt_savings')) || []).filter(s => s.userEmail === email);
+            if (savingContainer) {
+                savingContainer.innerHTML = mySavings.length === 0 ? `<p class="text-gray-600 text-sm italic text-center py-4">No savings records found.</p>` :
+                mySavings.map(s => {
+                    const expectedProfit = s.amount * s.profitRate;
+                    const totalReturn = s.amount + expectedProfit;
+                    return `
+                        <div class="bg-[#1e222d] p-4 rounded-xl border border-gray-800 flex justify-between items-center mb-3 font-mono text-xs">
+                            <div>
+                                <p class="text-white font-bold">${s.days} Days Plan - $${s.amount.toFixed(2)}</p>
+                                <p class="text-[10px] text-gray-400">Return: $${totalReturn.toFixed(2)} (+${(s.profitRate * 100)}%)</p>
+                                <p class="text-[9px] text-gray-500 mt-1">${s.startTimeStr || 'N/A'}</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${s.status === 'COMPLETED' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30'}">${s.status}</span>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // 5. Loan History
+            const loanContainer = document.getElementById('loan-history-container');
+            const myLoans = (JSON.parse(localStorage.getItem('nt_loans')) || []).filter(l => l.userEmail === email);
+            if (loanContainer) {
+                loanContainer.innerHTML = myLoans.length === 0 ? `<p class="text-gray-600 text-sm italic text-center py-4">No loan records found.</p>` :
+                myLoans.map(l => `
+                    <div class="bg-[#1e222d] p-4 rounded-xl border border-gray-800 flex justify-between items-center mb-3 font-mono text-xs">
+                        <div>
+                            <p class="text-white font-bold">${l.region} - ${l.tierOrAmount}</p>
+                            <p class="text-[10px] text-gray-400 leading-relaxed mt-0.5">${l.details}</p>
+                            <p class="text-[9px] text-gray-500 mt-1">${l.timestamp}</p>
+                        </div>
+                        <div class="text-right pl-2">
+                            <span class="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase ${l.status === 'APPROVED' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : (l.status === 'REJECTED' ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30')}">${l.status}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function handleImageSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                attachedBase64Image = await fileToBase64(file);
+                document.getElementById('image-preview-element').src = attachedBase64Image;
+                document.getElementById('image-preview-container').classList.remove('hidden');
+            }
+        }
+        function cancelImageAttachment() { attachedBase64Image = null; document.getElementById('chat-file-input').value = ''; document.getElementById('image-preview-container').classList.add('hidden'); }
+
+        function sendChatMessage() {
+            const inputEl = document.getElementById('chat-text-input');
+            const textMsg = inputEl.value.trim();
+            if (!textMsg && !attachedBase64Image) return;
+            let chatStore = JSON.parse(localStorage.getItem('nt_live_chats')) || {};
+            if (!chatStore[loggedInUser.id]) chatStore[loggedInUser.id] = [];
+            chatStore[loggedInUser.id].push({ sender: 'user', text: textMsg, image: attachedBase64Image, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) });
+            localStorage.setItem('nt_live_chats', JSON.stringify(chatStore));
+            inputEl.value = ''; cancelImageAttachment(); loadChatMessages();
+        }
+
+        function loadChatMessages() {
+            const chatBody = document.getElementById('chat-box-body');
+            if (!chatBody || !loggedInUser) return;
+            let myChat = (JSON.parse(localStorage.getItem('nt_live_chats')) || {})[loggedInUser.id] || [];
+            chatBody.innerHTML = myChat.length === 0 ? `<div class="text-center py-12"><p class="text-sm font-bold text-white">Live Support</p><p class="text-xs text-gray-500">How can we assist you today?</p></div>` :
+            myChat.map(msg => `<div class="flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}"><div class="max-w-[80%] rounded-2xl p-3.5 ${msg.sender === 'user' ? 'bg-cyan-600 text-white' : 'bg-gray-800 text-gray-200'} shadow-md">${msg.image ? `<img src="${msg.image}" class="max-w-full max-h-60 rounded-xl mb-2">` : ''}${msg.text ? `<p class="text-xs">${msg.text}</p>` : ''}</div></div>`).join('');
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+window.addEventListener("DOMContentLoaded", async () => {
+
+    try {
+        // Check existing login session
+        const result = await ntApiRequest("me");
+        
+        
+        await loadWalletBalance();
+        document.getElementById("top-balance-container").classList.remove("auth-hidden");
+
+
+        // Hide login page
+        document.getElementById("page-auth")
+            .classList.add("hidden");
+
+        // Show user profile
+        document.getElementById("page-settings")
+            .classList.remove("hidden");
+
+        // Display user email
+        document.getElementById("display-user-email")
+            .textContent = result.user.email;
+
+        // Hide login button
+        document.getElementById("auth-header-btns")
+            .classList.add("hidden");
+
+        // Hide unfinished account features
+        document.querySelector("#page-settings .space-y-2")
+            ?.classList.add("hidden");
+
+    } catch (error) {
+        // No valid session: keep login page visible
+        console.log("No active login session");
+    }
+
+});
+
+    </script>
+</body>
+</html>
