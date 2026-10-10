@@ -1,6 +1,15 @@
 
 'use strict';
 
+// Load environment variables before database initialization
+try {
+  process.loadEnvFile(
+    require('node:path').join(__dirname, '.env')
+  );
+} catch (error) {
+  if (error.code !== 'ENOENT') throw error;
+}
+
 const db = require('./database');
 
 const demoMode =

@@ -1,6 +1,5 @@
 
 const express = require("express");
-const db = require("./database");
 
 const app = express();
 // Reverse proxy trust is configured after reading .env.
@@ -10,6 +9,7 @@ app.use(express.json());
 // Read local .env when present; hosting providers may inject environment variables.
 try { process.loadEnvFile(".env"); }
 catch (e) { if (e.code !== 'ENOENT') throw e; }
+const db = require("./database");
 const ntPublicVirtual = process.env.PUBLIC_VIRTUAL_MODE === 'true' &&
     process.env.DEMO_ONLY_PLATFORM === 'true';
 if (process.env.PUBLIC_VIRTUAL_MODE === 'true' && !ntPublicVirtual) {
