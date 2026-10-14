@@ -1,0 +1,152 @@
+/* ==========================================
+   NATIONAL TRADE — MOBILE APP DESIGN
+
+   Mobile UI only.
+   Desktop design must remain unchanged.
+   ========================================== */
+   /* MOBILE CUSTOMER SUPPORT CHAT */
+
+#page-support > div {
+    height: calc(100dvh - 185px) !important;
+    min-height: 0 !important;
+    max-height: none !important;
+}
+
+#page-support #chat-box-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+#page-support #chat-text-input {
+    min-width: 0;
+}
+
+@media screen and (max-width: 767px) {
+
+    :root {
+        --nt-mobile-bg: #06152c;
+        --nt-mobile-card: #0b2342;
+        --nt-mobile-primary: #0b8cff;
+        --nt-mobile-border: #17477e;
+    }
+
+    /* ==========================================
+   NATIONAL TRADE - MOBILE APP HEADER
+   ========================================== */
+
+/* Mobile Header Only */
+body > header {
+    min-height: 68px;
+    padding: 12px 14px !important;
+
+    background: linear-gradient(
+        110deg,
+        #06152c 0%,
+        #092b50 100%
+    ) !important;
+
+    border-bottom: 1px solid rgba(
+        56, 156, 255, 0.36
+    ) !important;
+
+    box-shadow: 0 8px 24px rgba(
+        0, 0, 0, 0.24
+    );
+
+    backdrop-filter: blur(16px);
+}
+
+/* Mobile Logo */
+#nt-brand-user {
+    min-width: 0;
+    max-width: 62%;
+}
+
+#nt-brand-user img {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 44px;
+    object-fit: contain;
+    object-position: left center;
+}
+/* MOBILE SCREEN FIT */
+
+@media screen and (max-width: 767px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip !important;
+        scrollbar-width: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    #page-support,
+    #page-support > div {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    #page-support #chat-box-body {
+        min-width: 0;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overflow-wrap: anywhere;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    #page-support #chat-box-body::-webkit-scrollbar {
+        display: none;
+    }
+
+}
+/* MOBILE SCREEN FIT */
+
+@media screen and (max-width: 767px) {
+
+    html,
+    body {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip !important;
+        scrollbar-width: none;
+    }
+
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    #page-support,
+    #page-support > div {
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    #page-support #chat-box-body {
+        min-width: 0;
+        min-height: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overflow-wrap: anywhere;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    #page-support #chat-box-body::-webkit-scrollbar {
+        display: none;
+    }
+
+}
+}

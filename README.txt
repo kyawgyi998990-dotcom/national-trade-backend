@@ -15,7 +15,7 @@ The ZIP archive already contains those files with the correct filenames and fold
 HOW TO USE
 - Back up existing public/index.html, private/admin.html and public/nt-notify.js first.
 - Extract the ZIP into the national-trade-backend project root, preserving folder names.
-- Do not replace server.js, database.js, .env or nationaltrade.db.
+- Do not replace server.js, database.js or environment configuration.
 - Keep your Node server running: node server.js
 - Refresh Chrome with Ctrl+Shift+R.
 - Test index and admin on a real phone or Chrome mobile emulation.
@@ -35,3 +35,23 @@ NOT INCLUDED / LIMITATIONS
   trading fairness, production security or compliance checks were implemented.
 - Original risk/trading controls and browser-storage-dependent features are unchanged.
 - Real-device checks (iPhone, Android) and full deployed server integration still need testing.
+
+BACKEND TURSO DEPLOYMENT NOTES
+=============================
+
+- The Node.js backend now uses @libsql/client for the application database and
+  Express login sessions. Configure TURSO_DATABASE_URL, TURSO_AUTH_TOKEN and
+  SESSION_SECRET through the hosting provider's protected environment settings.
+- Startup validates the schema and session table before the HTTP listener accepts
+  requests; it does not migrate schemas or create admins automatically. Back up the
+  Turso database and explicitly authorize the migration command before schema changes.
+- Deposit receipts, KYC images and loan images are local files, not Turso objects.
+  Set PRIVATE_STORAGE_DIR to the absolute mount path of a durable, access-controlled
+  private volume (for example, /var/data/national-trade-private). The application
+  creates deposit-uploads, kyc-uploads and loan-uploads there, copies matching legacy
+  files from private/ without deleting the originals, and fails production startup
+  if the setting is missing or points inside public/. Every application instance
+  must access the same files. Include the KYC encryption key in protected backups;
+  never store it in the repository.
+- Existing virtual/demo-only safeguards remain in force. This migration does not
+  add real-money deposits, withdrawals, loans, savings, or trade settlement.

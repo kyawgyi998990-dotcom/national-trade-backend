@@ -4,7 +4,259 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+<!-- Hide login page while restoring the session -->
+<script>
+    document.documentElement.classList.add('nt-session-loading');
+</script>
+
+<style>
+    html.nt-session-loading #page-auth {
+        visibility: hidden !important;
+    }
+
+    
+/* NATIONAL TRADE - PREMIUM ORBIT RINGS LOADER */
+
+html.nt-session-loading body::before {
+    content: "INITIALIZING YOUR DASHBOARD";
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 180px 15px 0;
+
+    /* Original National Trade Logo */
+    background-color: #06152c;
+    background-image:
+        url("/nt-logo-original.png"),
+        radial-gradient(
+            ellipse at center,
+            #103766 0%,
+            #06152c 68%
+        );
+    background-size:
+        min(270px, 66vw) auto,
+        cover;
+    background-position:
+        center calc(50% + 4px),
+        center;
+    background-repeat: no-repeat;
+
+    color: #8ebbe7;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-align: center;
+
+    pointer-events: auto;
+}
+
+/* Double Neon Orbit Rings */
+html.nt-session-loading body::after {
+    content: "";
+    position: fixed;
+    left: 50%;
+    top: calc(50% - 116px);
+    width: 156px;
+    height: 156px;
+    translate: -50% -50%;
+    border-radius: 50%;
+    z-index: 2147483647;
+    pointer-events: none;
+
+    background:
+        radial-gradient(circle at 36px 118px,
+            #66ffe6 0 4px,
+            rgba(102, 255, 230, 0.55) 5px,
+            transparent 9px
+        ),
+        radial-gradient(circle at 118px 38px,
+            #67d8ff 0 3px,
+            rgba(103, 216, 255, 0.55) 4px,
+            transparent 8px
+        ),
+        conic-gradient(
+            from 0deg,
+            rgba(0,0,0,0) 0deg 18deg,
+            #63f7ff 42deg,
+            #23d8ff 110deg,
+            #1678ff 190deg,
+            #59ffd4 282deg,
+            rgba(0,0,0,0) 340deg 360deg
+        );
+
+    -webkit-mask: radial-gradient(
+        farthest-side,
+        transparent calc(50% - 18px),
+        #000 calc(50% - 17px),
+        #000 calc(50% - 1px),
+        transparent 100%
+    );
+    mask: radial-gradient(
+        farthest-side,
+        transparent calc(50% - 18px),
+        #000 calc(50% - 17px),
+        #000 calc(50% - 1px),
+        transparent 100%
+    );
+
+    box-shadow:
+        0 0 12px rgba(66, 210, 255, 0.35),
+        0 0 24px rgba(30, 144, 255, 0.30),
+        0 0 48px rgba(0, 204, 255, 0.22),
+        0 0 80px rgba(0, 140, 255, 0.12);
+
+    animation:
+        ntOrbitRotate 1.9s linear infinite,
+        ntOrbitPulse 2.4s ease-in-out infinite;
+}
+
+/* Smooth Continuous Rotation */
+@keyframes ntOrbitRotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+    
+/* NATIONAL TRADE — GALAXY ORBIT LOADER */
+
+
+/* Shared orbit positioning */
+html.nt-session-loading body::after,
+html.nt-session-loading::after {
+    content: "";
+    position: fixed;
+
+    left: 50%;
+    top: calc(50% - 116px);
+
+    /* Remove previous loader positioning */
+    translate: none;
+
+    /* Remove previous circular mask */
+    -webkit-mask: none;
+    mask: none;
+
+    box-sizing: border-box;
+    border-radius: 50%;
+
+    z-index: 2147483647;
+    pointer-events: none;
+}
+
+/* Orbit 1 — Electric Cyan */
+html.nt-session-loading body::after {
+    width: 190px;
+    height: 85px;
+
+    border: 3px solid #29dfff;
+    border-top-color: #c5ffff;
+    border-bottom-color: rgba(29, 117, 255, 0.45);
+
+    background:
+        radial-gradient(
+            circle at 12% 50%,
+            #ffffff 0 3px,
+            #42eeff 4px,
+            transparent 9px
+        );
+
+    box-shadow:
+        0 0 12px rgba(43, 216, 255, 0.5),
+        inset 0 0 12px rgba(22, 180, 255, 0.2);
+
+    filter: drop-shadow(0 0 5px #24dfff);
+
+    animation: ntGalaxyOrbitOne 3s linear infinite;
+}
+
+/* Orbit 2 — Neon Violet */
+html.nt-session-loading::after {
+    width: 190px;
+    height: 85px;
+
+    border: 3px solid #ab85ff;
+    border-top-color: #efd7ff;
+    border-bottom-color: rgba(79, 195, 255, 0.45);
+
+    background:
+        radial-gradient(
+            circle at 88% 50%,
+            #ffffff 0 3px,
+            #c596ff 4px,
+            transparent 9px
+        );
+
+    box-shadow:
+        0 0 12px rgba(165, 105, 255, 0.5),
+        inset 0 0 12px rgba(120, 85, 255, 0.2);
+
+    filter: drop-shadow(0 0 5px #b276ff);
+
+    animation: ntGalaxyOrbitTwo 4s linear infinite;
+}
+
+/* Cyan orbit rotation */
+@keyframes ntGalaxyOrbitOne {
+    from {
+        transform:
+            translate(-50%, -50%)
+            rotate(-35deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%)
+            rotate(325deg);
+    }
+}
+
+/* Violet orbit — opposite direction */
+@keyframes ntGalaxyOrbitTwo {
+    from {
+        transform:
+            translate(-50%, -50%)
+            rotate(45deg);
+    }
+
+    to {
+        transform:
+            translate(-50%, -50%)
+            rotate(-315deg);
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    html.nt-session-loading body::after,
+    html.nt-session-loading::after {
+        animation: none;
+        transform:
+            translate(-50%, -50%)
+            rotate(-35deg);
+    }
+}
+
+</style>
+
     <title>National Trade - Core Engine</title>
+    
+<!-- National Trade NT Favicon -->
+<link rel="icon" type="image/png" href="/nt-favicon-new.png">
+<link rel="apple-touch-icon" href="/nt-favicon-new.png">
+
+
+
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -439,6 +691,9 @@ button.bg-blue-600:hover,button[class*="bg-blue-600"]:hover{box-shadow:0 7px 27p
 @media(max-width:767px){#nt-virtual-notice{font-size:10px;padding:5px 12px}}
 </style>
 <script>window.NT_PUBLIC_VIRTUAL=true;</script>
+<!-- National Trade - Mobile App UI Only -->
+<link rel="stylesheet" href="/nt-mobile-app.css" media="screen and (max-width: 767px)">
+
 </head>
 <body>
 
@@ -490,7 +745,60 @@ button.bg-blue-600:hover,button[class*="bg-blue-600"]:hover{box-shadow:0 7px 27p
                     </div>
                     <div>
                         <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Password</label>
-                        <input type="password" id="login-pass" placeholder="••••••••" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                        <!-- National Trade - Login Password Show / Hide -->
+<div class="relative">
+
+    <input
+        type="password"
+        id="login-pass"
+        placeholder="••••••••"
+        autocomplete="current-password"
+        class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 pr-12 text-sm text-white outline-none focus:border-blue-500"
+    >
+
+    <button
+        type="button"
+        onclick="ntTogglePassword('login-pass', this)"
+        aria-label="Show password"
+        aria-pressed="false"
+        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors"
+    >
+
+        <!-- Eye Open -->
+        <svg
+            class="nt-eye-open w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+
+        <!-- Eye Off -->
+        <svg
+            class="nt-eye-off hidden w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M10.733 5.076a10.75 10.75 0 0 1 11.205 6.576 1 1 0 0 1 0 .696 10.8 10.8 0 0 1-1.444 2.49"/>
+            <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
+            <path d="M17.479 17.499A10.75 10.75 0 0 1 2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
+            <path d="m2 2 20 20"/>
+        </svg>
+
+    </button>
+
+</div>
                     </div>
                     <button onclick="handleLoginSubmit()" class="w-full bg-blue-600 hover:bg-blue-700 py-3.5 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-900/20 mt-2">Login</button>
                 </div>
@@ -503,17 +811,131 @@ button.bg-blue-600:hover,button[class*="bg-blue-600"]:hover{box-shadow:0 7px 27p
                     <div>
                         <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Verification Code</label>
                         <div class="flex space-x-2">
-                            <input type="text" id="reg-otp" placeholder="Enter 6-digit code" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                            <input
+    type="text"
+    id="reg-otp"
+    placeholder="Enter 6-digit code"
+    inputmode="numeric"
+    pattern="[0-9]{6}"
+    maxlength="6"
+    autocomplete="one-time-code"
+    class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500"
+>
                             <button id="btn-send-otp" onclick="sendOtpCode()" class="bg-blue-600/20 text-blue-400 border border-blue-500/30 px-4 rounded-xl text-xs font-bold whitespace-nowrap hover:bg-blue-600/30">Send Code</button>
                         </div>
                     </div>
                     <div>
                         <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Password</label>
-                        <input type="password" id="reg-pass" placeholder="At least 6 characters" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                        <div class="relative">
+    <input
+        type="password"
+        id="reg-pass"
+        placeholder="At least 12 characters"
+        autocomplete="new-password"
+        class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 pr-12 text-sm text-white outline-none focus:border-blue-500"
+    >
+
+    <button
+        type="button"
+        onclick="ntTogglePassword('reg-pass', this)"
+        aria-label="Show password"
+        aria-pressed="false"
+        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors"
+    >
+        <!-- Eye Open -->
+        <svg
+            class="nt-eye-open w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+
+        <!-- Eye Off -->
+        <svg
+            class="nt-eye-off hidden w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M10.733 5.076a10.75 10.75 0 0 1 11.205 6.576 1 1 0 0 1 0 .696 10.8 10.8 0 0 1-1.444 2.49"/>
+            <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
+            <path d="M17.479 17.499A10.75 10.75 0 0 1 2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
+            <path d="m2 2 20 20"/>
+        </svg>
+    </button>
+</div>
                     </div>
                     <div>
                         <label class="text-xs text-gray-400 mb-1 block uppercase font-bold">Confirm Password</label>
-                        <input type="password" id="reg-confirm-pass" placeholder="Re-enter password" class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 text-sm text-white outline-none focus:border-blue-500">
+                        <!-- National Trade - Confirm Password Show / Hide -->
+<div class="relative">
+
+    <input
+        type="password"
+        id="reg-confirm-pass"
+        placeholder="Re-enter password"
+        autocomplete="new-password"
+        class="w-full bg-[#1e222d] border border-gray-700 rounded-xl p-3.5 pr-12 text-sm text-white outline-none focus:border-blue-500"
+    >
+
+    <button
+        type="button"
+        onclick="ntTogglePassword('reg-confirm-pass', this)"
+        aria-label="Show password"
+        aria-pressed="false"
+        class="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-white transition-colors"
+    >
+
+        <!-- Eye Open -->
+        <svg
+            class="nt-eye-open w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/>
+            <circle cx="12" cy="12" r="3"/>
+        </svg>
+
+        <!-- Eye Off -->
+        <svg
+            class="nt-eye-off hidden w-5 h-5"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+        >
+            <path d="M10.733 5.076a10.75 10.75 0 0 1 11.205 6.576 1 1 0 0 1 0 .696 10.8 10.8 0 0 1-1.444 2.49"/>
+            <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"/>
+            <path d="M17.479 17.499A10.75 10.75 0 0 1 2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"/>
+            <path d="m2 2 20 20"/>
+        </svg>
+
+    </button>
+
+</div>
                     </div>
                     <button onclick="handleRegisterSubmit()" class="w-full bg-blue-600 hover:bg-blue-700 py-3.5 rounded-xl font-bold text-white transition-all shadow-lg shadow-blue-900/20 mt-2">Create Account</button>
                 </div>
@@ -1119,17 +1541,27 @@ button.bg-blue-600:hover,button[class*="bg-blue-600"]:hover{box-shadow:0 7px 27p
         (function() { emailjs.init(EMAILJS_PUBLIC_KEY); })();
 
         let currentBalance = 0.00;
+        let ntLatestWalletRequest = 0;
+
         
 async function loadWalletBalance() {
-    try {
-        const wallet = await ntApiRequest("wallet");
+        const requestId = ++ntLatestWalletRequest;
 
+        try {
+            const wallet = await ntApiRequest("wallet");
+
+            if (requestId !== ntLatestWalletRequest) return;
         // Shared Main Balance: server wallet_balance_cents is the only trade authority.
         currentBalance = wallet.balance_cents / 100;
         const balanceEl = document.getElementById("top-balance");
 
         if (balanceEl) {
-            balanceEl.textContent = "$" + wallet.balance_usd;
+            
+balanceEl.textContent = "$" + currentBalance.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+});
+
         }
 
     } catch (error) {
@@ -1318,7 +1750,29 @@ async function loadWalletBalance() {
                 error.classList.remove('hidden');
             }
         }
+        // National Trade - Password Show / Hide
+function ntTogglePassword(inputId, button) {
+    const input = document.getElementById(inputId);
 
+    if (!input) return;
+
+    const showPassword = input.type === "password";
+
+    input.type = showPassword ? "text" : "password";
+
+    button.setAttribute(
+        "aria-label",
+        showPassword ? "Hide password" : "Show password"
+    );
+
+    button.setAttribute("aria-pressed", String(showPassword));
+
+    button.querySelector(".nt-eye-open")
+        .classList.toggle("hidden", showPassword);
+
+    button.querySelector(".nt-eye-off")
+        .classList.toggle("hidden", !showPassword);
+}
         function toggleAuthForm(type) {
             const loginForm = document.getElementById('form-login');
             const regForm = document.getElementById('form-register');
@@ -1335,15 +1789,51 @@ async function loadWalletBalance() {
             }
         }
 
-        function sendOtpCode() {
-            const regId = document.getElementById('reg-id').value.trim();
-            if (!regId) { alert("Please enter email."); return; }
-            const btn = document.getElementById('btn-send-otp');
-            btn.innerText = "Sending..."; btn.disabled = true;
-            generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, { to_email: regId, otp_code: generatedOtp })
-            .then(() => { alert(`OTP sent to ${regId}`); startOtpTimer(); }, () => { alert("Failed to send OTP."); btn.innerText = "Send Code"; btn.disabled = false; });
-        }
+        // National Trade - Secure OTP Request
+async function sendOtpCode() {
+    const email = document
+        .getElementById("reg-id")
+        .value.trim()
+        .toLowerCase();
+
+    const btn = document.getElementById("btn-send-otp");
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert("Please enter a valid email address.");
+        return;
+    }
+
+    if (btn.disabled) return;
+
+    btn.innerText = "Sending...";
+    btn.disabled = true;
+
+    try {
+        const result = await ntApiRequest(
+            "register/request-otp",
+            "POST",
+            { email: email }
+        );
+
+        document.getElementById("reg-otp").value = "";
+
+        alert(
+            result.message ||
+            "Verification code sent to your email."
+        );
+
+        startOtpTimer();
+
+    } catch (error) {
+        alert(
+            error.message ||
+            "Failed to send verification code."
+        );
+
+        btn.innerText = "Send Code";
+        btn.disabled = false;
+    }
+}
 
         function startOtpTimer() {
             const btn = document.getElementById('btn-send-otp');
@@ -1363,7 +1853,12 @@ async function handleRegisterSubmit() {
 
     const confirmPassword =
         document.getElementById("reg-confirm-pass").value;
+    const otp = document.getElementById("reg-otp").value.trim();
 
+if (!/^[0-9]{6}$/.test(otp)) {
+    alert("Please enter a valid 6-digit verification code.");
+    return;
+}
     if (!email || !password) {
         alert("Please enter email and password.");
         return;
@@ -1384,9 +1879,10 @@ async function handleRegisterSubmit() {
 
     try {
         const result = await ntApiRequest("register", "POST", {
-            email: email,
-            password: password
-        });
+    email: email,
+    password: password,
+    otp: otp
+});
 
         alert(result.message);
 
@@ -1448,6 +1944,14 @@ async function handleLoginSubmit() {
         document.getElementById("page-settings")
             .classList.remove("hidden");
 
+            
+        document.querySelectorAll('#main-nav .tab-btn').forEach(button => {
+        button.classList.toggle(
+        'tab-active',
+        button.id === 'btn-settings'
+    );
+});
+
         // Display logged-in user's email
         document.getElementById("display-user-email")
             .textContent = result.user.email;
@@ -1492,6 +1996,19 @@ async function handleLoginSubmit() {
             if(targetPage) targetPage.classList.remove('hidden');
             const btn = document.getElementById('btn-' + tab);
             if(btn) btn.classList.add('tab-active');
+            
+/* Remember the current user page */
+if (targetPage && loggedInUser?.serverAuthenticated && tab !== 'auth') {
+    try {
+        sessionStorage.setItem(
+            'nt-last-page:' + loggedInUser.id,
+            tab
+        );
+    } catch (error) {
+        console.warn('Page memory unavailable');
+    }
+}
+
             if (tab === 'support') loadChatMessages();
             if (tab === 'trading') { void ntLoadDemoTrades(); startActiveTradeSyncLoop(); }
             if (tab === 'saving' || tab === 'saving-history') void loadUserSavings();
@@ -1914,10 +2431,38 @@ async function handleLoginSubmit() {
                 return `<div class="flex items-center justify-between bg-[#1e222d] p-4 rounded-xl border border-gray-700 border-l-4 ${dir==='UP'?'border-l-[#00c853]':'border-l-[#ff3d00]'} mb-2">
                     <div><span class="text-[10px] font-bold ${dir==='UP'?'text-[#00c853]':'text-[#ff3d00]'} uppercase">${ntTradeEscape(dir)} ORDER (${ntTradeEscape(asset)}) ·</span>
                     <p class="text-sm font-mono font-bold">${ntTradeMoney(t.amount_cents)} (Entry: $${Number(t.entry_price).toFixed(2)})</p></div>
-                    <div class="text-right"><p class="text-blue-400 font-mono font-bold text-lg">${secs>0?secs+'s':'Settling...'}</p></div>
+                    <div class="text-right"><p class="text-blue-400 font-mono font-bold text-lg nt-user-countdown" data-expires-ms="${Number(t.expires_at_ms)}">${secs>0?secs+'s':'Settling...'}</p></div>
                     </div>`;
             }).join('');
         }
+        
+/* Smooth User Trading Countdown */
+setInterval(() => {
+    document.querySelectorAll(
+        '#trade-history .nt-user-countdown'
+    ).forEach((element) => {
+
+        const expiresAt = Number(element.dataset.expiresMs);
+
+        if (!Number.isFinite(expiresAt) || expiresAt <= 0) {
+            return;
+        }
+
+        const seconds = Math.max(
+            0,
+            Math.ceil((expiresAt - Date.now()) / 1000)
+        );
+
+        const display = seconds > 0
+            ? `${seconds}s`
+            : 'Settling...';
+
+        if (element.textContent !== display) {
+            element.textContent = display;
+        }
+    });
+}, 250);
+
         function ntPaintTradeLog(){
             const el=document.getElementById('trade-log-container');if(!el)return;
             const items=ntDemoTrading.trades.filter(t=>t.status==='WIN'||t.status==='LOSS');
@@ -1938,7 +2483,14 @@ async function handleLoginSubmit() {
         function ntSavingsSetWallet(cents) {
             if (!Number.isSafeInteger(cents)) return;
             const node = document.getElementById('top-balance');
-            if (node) node.textContent = ntSavingsFmt(cents / 100);
+            
+if (node) {
+    node.textContent = '$' + (cents / 100).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
         }
         async function ntSavingsRequest(url, method='GET', data) {
             const response = await fetch(url,{
@@ -2060,7 +2612,7 @@ async function handleLoginSubmit() {
                         ? s.payout_cents/100 : s.amount*(1+s.profitRate);
                     const payoutLabel=completed?'Total Return':'Illustrative maturity value';
                     const releaseInfo=completed
-                        ? (s.releaseKind==='ADMIN_TEST_RELEASE'?'Admin test release':'User maturity claim')
+                        ? (s.releaseKind==='successfully'?'Admin test release':'User maturity claim')
                         : 'Unlocks: '+ntTimeFormat(s.endTimeStr);
                     const when=completed && s.reviewedAt
                         ? 'Released: '+ntTimeFormat(s.reviewedAt)
@@ -2246,7 +2798,7 @@ async function submitIDVerification() {
         return;
     }
     if (!await ntConfirm(window.NT_PUBLIC_VIRTUAL ?
-        "Submit fictional details and example images for account review? Never upload real ID documents." :
+        "Please provide a clear picture of the front and back of your ID card." :
         "Submit your identity documents for admin review?")) return;
 
     const button = document.querySelector(
@@ -2606,6 +3158,13 @@ window.addEventListener("DOMContentLoaded", async () => {
         // Show user profile
         document.getElementById("page-settings")
             .classList.remove("hidden");
+             
+        document.querySelectorAll('#main-nav .tab-btn').forEach(button => {
+        button.classList.toggle(
+        'tab-active',
+        button.id === 'btn-settings'
+         );
+    });
 
         // Display user email
         document.getElementById("display-user-email")
@@ -2614,12 +3173,36 @@ window.addEventListener("DOMContentLoaded", async () => {
         // Hide login button
         document.getElementById("auth-header-btns")
             .classList.add("hidden");
+        
+/* Restore the last opened page after refresh */
+try {
+    const savedPage = sessionStorage.getItem(
+        'nt-last-page:' + loggedInUser.id
+    );
 
+    const pageExists = savedPage &&
+        document.getElementById('page-' + savedPage);
 
-    } catch (error) {
-        // No valid session: keep login page visible
-        console.log("No active login session");
+    const allowed = loggedInUser.kycStatus === 'VERIFIED' ||
+        ['settings', 'support', 'id-verify'].includes(savedPage);
+
+    if (pageExists && savedPage !== 'auth' && allowed) {
+        switchTab(savedPage);
     }
+} catch (error) {
+    console.warn('Could not restore previous page');
+}
+
+
+    
+} catch (error) {
+    // No valid session: keep login page visible
+    console.log("No active login session");
+} finally {
+    // Reveal the correct page after session validation
+    document.documentElement.classList.remove('nt-session-loading');
+}
+
 
 });
 

@@ -1,15 +1,9 @@
 
-const Database = require("better-sqlite3");
-
-// Create or open SQLite Database
-const db = new Database(require('node:path').join(__dirname, 'nationaltrade.db'));
-
-// Database settings
-db.pragma("journal_mode = WAL");
-db.pragma("foreign_keys = ON");
+async function migrateDatabase(db = require('./turso-db')) {
+await db.run('PRAGMA foreign_keys = ON');
 
 // Create Users Table
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email TEXT NOT NULL UNIQUE,
@@ -19,7 +13,7 @@ db.exec(`
 `);
 
  // Create Wallet Balances Table
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS wallet_balances (
         user_id INTEGER PRIMARY KEY,
         balance_cents INTEGER NOT NULL DEFAULT 0
@@ -31,7 +25,7 @@ db.exec(`
 `);
 
  // Automatically create wallet for new users
-db.exec(`
+await db.exec(`
     CREATE TRIGGER IF NOT EXISTS create_user_wallet
     AFTER INSERT ON users
     BEGIN
@@ -44,7 +38,7 @@ db.exec(`
 `);
 
  // Create Admin Accounts Table
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS admin_users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT NOT NULL UNIQUE,
@@ -54,14 +48,14 @@ db.exec(`
 `);
 
  // Add Block / Unblock status to Users Database
-const userColumns = db.prepare("PRAGMA table_info(users)").all();
+const userColumns = await db.all("PRAGMA table_info(users)");
 
 const hasBlockColumn = userColumns.some(
     column => column.name === "is_blocked"
 );
 
 if (!hasBlockColumn) {
-    db.exec(`
+    await db.exec(`
         ALTER TABLE users
         ADD COLUMN is_blocked INTEGER NOT NULL DEFAULT 0
         CHECK (is_blocked IN (0, 1))
@@ -69,7 +63,7 @@ if (!hasBlockColumn) {
 }
 
  // Record admin wallet balance adjustments
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS wallet_adjustments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -87,19 +81,18 @@ db.exec(`
 `);
 
  // Track user login session version
-const hasAuthVersion = db.prepare("PRAGMA table_info(users)")
-    .all()
+const hasAuthVersion = (await db.all("PRAGMA table_info(users)"))
     .some(column => column.name === "auth_version");
 
 if (!hasAuthVersion) {
-    db.exec(`
+    await db.exec(`
         ALTER TABLE users
         ADD COLUMN auth_version INTEGER NOT NULL DEFAULT 0
     `);
 }
 
  // Deposit Requests Database
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS deposit_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -118,25 +111,25 @@ db.exec(`
 `);
 
  // Deposit review audit fields (non-destructive migration for older databases).
-const depositCols = db.prepare("PRAGMA table_info(deposit_requests)").all();
+const depositCols = await db.all("PRAGMA table_info(deposit_requests)");
 if (!depositCols.some(c => c.name === "review_txid")) {
-    db.exec("ALTER TABLE deposit_requests ADD COLUMN review_txid TEXT");
+    await db.exec("ALTER TABLE deposit_requests ADD COLUMN review_txid TEXT");
 }
 if (!depositCols.some(c => c.name === "review_note")) {
-    db.exec("ALTER TABLE deposit_requests ADD COLUMN review_note TEXT");
+    await db.exec("ALTER TABLE deposit_requests ADD COLUMN review_note TEXT");
 }
 // Never credit the same blockchain transaction twice, across users and assets.
-db.exec(`
+await db.exec(`
     CREATE UNIQUE INDEX IF NOT EXISTS idx_deposit_approved_txid
     ON deposit_requests(lower(review_txid))
     WHERE status = 'APPROVED' AND review_txid IS NOT NULL
 `);
 
 // User KYC Verification Status
-const kycColumns = db.prepare("PRAGMA table_info(users)").all();
+const kycColumns = await db.all("PRAGMA table_info(users)");
 
 if (!kycColumns.some(column => column.name === "kyc_status")) {
-    db.exec(`
+    await db.exec(`
         ALTER TABLE users
         ADD COLUMN kyc_status TEXT NOT NULL
         DEFAULT 'UNVERIFIED'
@@ -152,7 +145,7 @@ if (!kycColumns.some(column => column.name === "kyc_status")) {
 }
 
  // KYC Verification Requests
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS kyc_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -176,19 +169,17 @@ db.exec(`
 `);
 
  // KYC Document Storage Columns
-const kycRequestColumns = db.prepare(
-    "PRAGMA table_info(kyc_requests)"
-).all();
+const kycRequestColumns = await db.all("PRAGMA table_info(kyc_requests)");
 
 if (!kycRequestColumns.some(c => c.name === "front_image_path")) {
-    db.exec(`
+    await db.exec(`
         ALTER TABLE kyc_requests
         ADD COLUMN front_image_path TEXT
     `);
 }
 
 if (!kycRequestColumns.some(c => c.name === "back_image_path")) {
-    db.exec(`
+    await db.exec(`
         ALTER TABLE kyc_requests
         ADD COLUMN back_image_path TEXT
     `);
@@ -196,23 +187,23 @@ if (!kycRequestColumns.some(c => c.name === "back_image_path")) {
 
 // A separate marker for deliberately fictional sample-review documents.
 // Never treat older real-KYC files as mock files or return them from virtual APIs.
-const ntMockKycColumns = db.prepare("PRAGMA table_info(kyc_requests)").all();
+const ntMockKycColumns = await db.all("PRAGMA table_info(kyc_requests)");
 if (!ntMockKycColumns.some(column => column.name === "is_mock_submission")) {
-    db.exec(`ALTER TABLE kyc_requests ADD COLUMN is_mock_submission INTEGER NOT NULL
+    await db.exec(`ALTER TABLE kyc_requests ADD COLUMN is_mock_submission INTEGER NOT NULL
         DEFAULT 0 CHECK (is_mock_submission IN (0, 1))`);
 }
 
 // KYC identity information is encrypted before it is stored (new submissions only).
-const kycIdentityColumns = db.prepare("PRAGMA table_info(kyc_requests)").all();
+const kycIdentityColumns = await db.all("PRAGMA table_info(kyc_requests)");
 for (const column of ["full_name_enc", "document_number_enc"]) {
     if (!kycIdentityColumns.some(c => c.name === column)) {
-        db.exec(`ALTER TABLE kyc_requests ADD COLUMN ${column} TEXT`);
+        await db.exec(`ALTER TABLE kyc_requests ADD COLUMN ${column} TEXT`);
     }
 }
 
 // Withdrawal requests are server-authoritative. The available wallet balance is
-// reserved (deducted) within the same SQLite transaction as a new request.
-db.exec(`
+// reserved (deducted) within the same Turso transaction as a new request.
+await db.exec(`
     CREATE TABLE IF NOT EXISTS withdrawal_requests (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -236,8 +227,8 @@ db.exec(`
 
 
 // Savings positions (localhost test returns only; no live investment yield engine).
-// Amounts are stored in integer cents and balances are changed in SQLite transactions.
-db.exec(`
+// Amounts are stored in integer cents and balances are changed in Turso transactions.
+await db.exec(`
     CREATE TABLE IF NOT EXISTS savings_positions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -281,7 +272,7 @@ db.exec(`
 
 // Personal Loan application records. Only the existing loan feature uses these tables.
 // IDs and personal names are encrypted; only non-sensitive summaries reach the UI.
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS loan_applications (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -325,9 +316,9 @@ db.exec(`
     );
 `);
 
-// Live Support Chat: shared SQLite message history, not browser localStorage.
+// Live Support Chat: shared Turso message history, not browser localStorage.
 // Images are stored as validated JPEG/PNG BLOBs and served only to participants/admins.
-db.exec(`
+await db.exec(`
     CREATE TABLE IF NOT EXISTS support_messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER NOT NULL,
@@ -349,7 +340,7 @@ db.exec(`
 
 // DEMO-ONLY Trading — the existing wallet_balances is the shared DEMO Main Balance.
 // These are SIMULATED entries, NOT executed cryptocurrency or cash transactions.
-db.exec(`
+await db.exec(`
  CREATE TABLE IF NOT EXISTS demo_main_trades (
    id INTEGER PRIMARY KEY AUTOINCREMENT,
    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -382,6 +373,126 @@ db.exec(`
  );
 `);
 
-console.log("National Trade Database Ready!");
+    // Per-user result settings for disclosed DEMO simulations only.
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS demo_user_result_modes (
+            user_id INTEGER PRIMARY KEY
+                REFERENCES users(id) ON DELETE CASCADE,
 
-module.exports = db;
+            result_mode TEXT NOT NULL DEFAULT 'MANUAL'
+                CHECK (
+                    result_mode IN (
+                        'MANUAL',
+                        'ALWAYS_WIN',
+                        'ALWAYS_LOSS'
+                    )
+                ),
+
+            updated_by INTEGER REFERENCES admin_users(id),
+            updated_at_ms INTEGER NOT NULL
+        );
+    `);
+
+await db.exec(`
+    CREATE TABLE IF NOT EXISTS nt_web_sessions (
+        sid TEXT PRIMARY KEY NOT NULL,
+        session_json TEXT NOT NULL,
+        expires_at_ms INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_nt_web_sessions_expires
+      ON nt_web_sessions(expires_at_ms);
+`);
+// Turso remote database does not support writing PRAGMA user_version.
+// Database structure is checked separately by validateDatabase().
+
+console.log("Turso database migration completed.");
+}
+
+const requiredColumns = {
+    users: ['id', 'email', 'password_hash', 'created_at', 'is_blocked', 'auth_version', 'kyc_status'],
+    wallet_balances: ['user_id', 'balance_cents'],
+    admin_users: ['id', 'username', 'password_hash', 'created_at'],
+    wallet_adjustments: ['id', 'user_id', 'admin_id', 'delta_cents', 'balance_before_cents', 'balance_after_cents', 'reason', 'created_at'],
+    deposit_requests: ['id', 'user_id', 'asset', 'amount_cents', 'proof_path', 'status', 'created_at', 'reviewed_by', 'reviewed_at', 'review_txid', 'review_note'],
+    kyc_requests: ['id', 'user_id', 'status', 'submitted_at', 'reviewed_at', 'reviewed_by', 'front_image_path', 'back_image_path', 'is_mock_submission', 'full_name_enc', 'document_number_enc'],
+    withdrawal_requests: ['id', 'user_id', 'method', 'address', 'amount_cents', 'status', 'created_at', 'reviewed_at', 'reviewed_by', 'review_note'],
+    savings_positions: ['id', 'user_id', 'amount_cents', 'duration_days', 'profit_rate_bps', 'status', 'started_at_ms', 'unlock_at_ms', 'released_at_ms', 'released_by', 'release_kind', 'payout_cents', 'request_token'],
+    savings_audit: ['id', 'savings_id', 'user_id', 'admin_id', 'action', 'wallet_delta_cents', 'created_at_ms'],
+    loan_applications: ['id', 'user_id', 'region', 'tier', 'amount_cents', 'credit_score', 'full_name_enc', 'identity_number_enc', 'identity_last4', 'front_file', 'back_file', 'status', 'request_token', 'created_at_ms', 'reviewed_at_ms', 'reviewed_by', 'credited_cents', 'wallet_before_cents', 'wallet_after_cents'],
+    loan_audit: ['id', 'loan_id', 'user_id', 'admin_id', 'action', 'wallet_delta_cents', 'created_at_ms'],
+    support_messages: ['id', 'user_id', 'sender', 'admin_id', 'message_text', 'image_mime', 'image_blob', 'created_at_ms', 'edited_at_ms'],
+    demo_main_trades: ['id', 'user_id', 'asset', 'direction', 'amount_cents', 'entry_price', 'closing_price', 'result_source', 'chosen_result', 'status', 'profit_cents', 'created_at_ms', 'expires_at_ms', 'settled_at_ms', 'settled_by', 'request_token'],
+    demo_main_trade_audit: ['id', 'trade_id', 'user_id', 'admin_id', 'action', 'wallet_delta_cents', 'created_at_ms'],
+    
+demo_user_result_modes: [
+    'user_id',
+    'result_mode',
+    'updated_by',
+    'updated_at_ms'
+],
+
+    nt_web_sessions: ['sid', 'session_json', 'expires_at_ms']
+
+};
+
+const requiredIndexes = [
+    'idx_deposit_approved_txid',
+    'idx_kyc_one_pending_per_user',
+    'idx_withdrawals_user',
+    'idx_withdrawals_pending',
+    'idx_savings_user',
+    'idx_savings_active',
+    'idx_savings_request_token',
+    'idx_loan_applications_user',
+    'idx_loan_applications_status',
+    'idx_loan_one_pending',
+    'idx_support_messages_user',
+    'idx_support_messages_created',
+    'idx_demo_main_trades_user',
+    'idx_demo_main_trades_open',
+    'idx_nt_web_sessions_expires'
+];
+
+async function validateDatabase(db = require('./turso-db')) {
+    const version = await db.get('PRAGMA user_version');
+
+if (![0, 1].includes(Number(version?.user_version))) {
+    throw new Error(
+        `Unsupported Turso schema version: ${version?.user_version}`
+    );
+}
+
+    const objects = await db.all(
+        "SELECT type, name FROM sqlite_master WHERE type IN ('table', 'index', 'trigger')"
+    );
+    const names = new Set(objects.map(object => object.name));
+    const missing = [];
+
+    for (const [table, columns] of Object.entries(requiredColumns)) {
+        if (!names.has(table)) {
+            missing.push(`table ${table}`);
+            continue;
+        }
+
+        const actual = new Set(
+            (await db.all(`PRAGMA table_info("${table}")`)).map(column => column.name)
+        );
+        for (const column of columns) {
+            if (!actual.has(column)) missing.push(`column ${table}.${column}`);
+        }
+    }
+
+    for (const index of requiredIndexes) {
+        if (!names.has(index)) missing.push(`index ${index}`);
+    }
+    if (!names.has('create_user_wallet')) missing.push('trigger create_user_wallet');
+
+    if (missing.length) {
+        throw new Error(
+            `Turso schema is incomplete (${missing.join(', ')}). ` +
+            'Back up the database and run the explicitly approved schema migration.'
+        );
+    }
+}
+
+module.exports = { migrateDatabase, validateDatabase };

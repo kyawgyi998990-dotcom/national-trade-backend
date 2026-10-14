@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node start.js"
+    "test": "node --test",
+    "start": "node start.js",
+    "migrate-database": "node migrate-database.js --apply",
+    "create-admin": "node create-admin.js --bootstrap"
   },
   "keywords": [],
   "author": "",
@@ -13,12 +15,15 @@
   "type": "commonjs",
   "dependencies": {
     "@libsql/client": "^0.18.0",
+    "@supabase/supabase-js": "^2.117.3",
     "bcryptjs": "^3.0.3",
-    "better-sqlite3": "^13.0.3",
-    "better-sqlite3-session-store": "^0.1.0",
     "dotenv": "^18.0.7",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
+    "lightweight-charts": "5.2.1",
     "multer": "^2.4.0"
+  },
+  "devDependencies": {
+    "tailwindcss": "3.4.17"
   }
 }

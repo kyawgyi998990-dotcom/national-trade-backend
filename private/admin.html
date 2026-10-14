@@ -2,6 +2,11 @@
 <html lang="en">
 <!-- National Trade: responsive layout and custom notification upgrade. Existing features preserved. -->
 <head>
+
+<!-- National Trade Admin Favicon -->
+<link rel="icon" type="image/png" href="/nt-favicon-new.png?v=3">
+<link rel="apple-touch-icon" href="/nt-favicon-new.png?v=3">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National Trade - Super Admin Portal</title>
@@ -448,6 +453,64 @@ button:focus-visible{outline:2px solid #32ceff !important;outline-offset:2px}
 
             <!-- PANEL 3: TRADING CONTROL & MONITORING -->
             <div id="panel-trading-control" class="tab-panel hidden space-y-6">
+                
+<!-- PER-USER DEMO SIMULATION RESULT SETTINGS -->
+<div id="nt-demo-result-settings"
+     class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl space-y-5">
+
+    <div class="flex items-center justify-between gap-4 flex-wrap">
+        <div>
+            <h3 class="text-sm font-bold text-white uppercase">
+                User Demo Result Settings
+            </h3>
+            <p class="text-xs text-gray-400 mt-2">
+                Administrator-controll simulated results.
+            </p>
+        </div>
+
+        <span class="bg-blue-500/20 text-blue-400
+                     border border-blue-500/30
+                     text-xs font-bold px-3 py-1 rounded-full">
+            All User status
+        </span>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-gray-300">
+
+            <thead class="bg-gray-800/50 text-xs uppercase
+                          border-b border-gray-800">
+                <tr>
+                    <th class="px-5 py-4">User Email</th>
+                    <th class="px-5 py-4">Result Mode</th>
+                    <th class="px-5 py-4 text-right">Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="nt-demo-result-modes-body"
+                   class="divide-y divide-gray-800/50">
+
+                <tr>
+                    <td colspan="3"
+                        class="px-5 py-8 text-center text-gray-500">
+                        Demo user settings are not loaded yet.
+                    </td>
+                </tr>
+
+            </tbody>
+
+        </table>
+    </div>
+
+    <p id="nt-demo-result-status"
+       class="text-xs text-gray-400">
+        MANUAL = per-trade control.
+        ALWAYS WIN / ALWAYS LOSS = predetermined demo outcomes.
+    </p>
+
+</div>
+<!-- END PER-USER DEMO SETTINGS -->
+
                 <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl space-y-6">
                     <div class="flex justify-between items-center border-b border-gray-800 pb-4">
                         <div>
@@ -558,7 +621,7 @@ button:focus-visible{outline:2px solid #32ceff !important;outline-offset:2px}
                     <div class="flex justify-between items-center border-b border-gray-800 pb-4">
                         <div>
                             <h3 class="text-sm font-bold text-white uppercase">User Savings Management</h3>
-                            <p class="text-xs text-gray-500">Virtual credit savings positions and simulated releases; no investment payouts.</p>
+                            <p class="text-xs text-gray-500">Virtual credit savings positions and simulated releases </p>
                         </div>
                         <span id="admin-badge-savings-count" class="bg-indigo-500/20 text-indigo-400 font-mono text-xs px-3 py-1 rounded-full font-bold border border-indigo-500/30">0 Active</span>
                     </div>
@@ -615,7 +678,7 @@ button:focus-visible{outline:2px solid #32ceff !important;outline-offset:2px}
             <div id="panel-loans" class="tab-panel hidden space-y-6">
                 <div class="bg-gray-900 border border-gray-800 rounded-2xl p-6 shadow-2xl">
                     <div class="flex justify-between items-center mb-6">
-                        <div><h3 class="text-sm font-bold text-white uppercase">Personal Loan Applications</h3><p class="text-[10px] text-amber-300 mt-1">Local demo only — approving creates test credit, not a real loan disbursement.</p></div>
+                        <div><h3 class="text-sm font-bold text-white uppercase">Personal Loan Applications</h3><p class="text-[10px] text-amber-300 mt-1">Personal loan applications for review.</p></div>
                         <span id="badge-loan-count-panel" class="bg-blue-500/20 text-blue-400 font-mono text-xs px-3 py-1 rounded-full font-bold border border-blue-500/30">0 Pending</span>
                     </div>
                     <div class="overflow-x-auto">
@@ -1034,6 +1097,11 @@ window.addEventListener("DOMContentLoaded", async () => {
 
             document.getElementById('page-title').innerText = tab.replace('-', ' ').toUpperCase();
             loadAdminData();
+            
+if (tab === 'trading-control') {
+    renderNtDemoResultModes();
+}
+
         }
 
         async function manualRefreshData() {
@@ -1256,7 +1324,7 @@ window.addEventListener("DOMContentLoaded", async () => {
         async function processLoan(idx,action){
             const loan=loans[idx];if(!loan||loan.status!=='PENDING')return;
             const approve=action==='APPROVE';
-            const message=approve?'Approve virtual loan credits of '+loan.tierOrAmount+' for '+loan.userEmail+' (not a real loan)?':
+            const message=approve?'Approve virtual loan credits of '+loan.tierOrAmount+' for '+loan.userEmail+' (if confirm)?':
                 'Reject loan request for '+loan.userEmail+'?';
             if(!(await ntConfirm(message)))return;
             try{
@@ -1570,6 +1638,174 @@ async function reviewDbDeposit(d, action) {
         let ntAdminDemoTradesLoading=false;
         function ntAdminDemoEscape(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
         const ntAdminDemoMoney=(n)=>'$'+(Number(n)/100).toFixed(2);
+        
+/* Load per-user DEMO simulation settings */
+async function renderNtDemoResultModes() {
+    const tbody = document.getElementById(
+        'nt-demo-result-modes-body'
+    );
+
+    const status = document.getElementById(
+        'nt-demo-result-status'
+    );
+
+    if (!tbody) return;
+
+    try {
+        const response = await fetch(
+            '/api/admin/demo-result-modes',
+            {
+                credentials: 'same-origin',
+                cache: 'no-store'
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !Array.isArray(data.users)) {
+            throw new Error(
+                data.message || 'Unable to load demo settings'
+            );
+        }
+
+        tbody.replaceChildren();
+
+        for (const user of data.users) {
+            const row = tbody.insertRow();
+
+            const emailCell = row.insertCell();
+            emailCell.className = 'px-5 py-4 text-white';
+            emailCell.textContent = user.email;
+
+            
+const modeCell = row.insertCell();
+modeCell.className = 'px-5 py-4';
+
+const modeSelect = document.createElement('select');
+
+modeSelect.className =
+    'bg-[#0b1e3a] text-blue-400 border border-blue-500/40 rounded-lg px-3 py-2 text-sm';
+
+modeSelect.dataset.userId = String(user.user_id);
+
+const modes = [
+    ['MANUAL', 'MANUAL'],
+    ['ALWAYS_WIN', 'ALWAYS WIN'],
+    ['ALWAYS_LOSS', 'ALWAYS LOSS']
+];
+
+for (const [value, label] of modes) {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    modeSelect.appendChild(option);
+}
+
+modeSelect.value = user.result_mode || 'MANUAL';
+
+modeCell.appendChild(modeSelect);
+
+
+            
+const actionCell = row.insertCell();
+actionCell.className = 'px-5 py-4 text-right';
+
+const saveButton = document.createElement('button');
+saveButton.type = 'button';
+saveButton.textContent = user.updated_at_ms ? 'Saved' : 'Save';
+
+saveButton.className =
+    'bg-blue-600 hover:bg-blue-700 text-white ' +
+    'text-xs font-bold px-4 py-2 rounded-lg ' +
+    'disabled:opacity-50';
+
+modeSelect.addEventListener('change', () => {
+    saveButton.textContent = 'Save';
+});
+
+saveButton.addEventListener('click', async () => {
+    const resultMode = modeSelect.value;
+
+    const confirmed = confirm(
+        'DEMO ONLY: Save ' +
+        resultMode.replaceAll('_', ' ') +
+        ' for ' + user.email + '?'
+    );
+
+    if (!confirmed) return;
+
+    saveButton.disabled = true;
+    saveButton.textContent = 'Saving...';
+
+    try {
+        const response = await fetch(
+            '/api/admin/demo-result-modes/' +
+                encodeURIComponent(user.user_id),
+            {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    result_mode: resultMode
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                data.message || 'Unable to save setting'
+            );
+        }
+
+        saveButton.textContent = 'Saved';
+
+        if (status) {
+            status.textContent =
+                'Saved DEMO setting for ' + user.email;
+        }
+
+    } catch (error) {
+        saveButton.textContent = 'Save';
+
+        if (status) {
+            status.textContent =
+                'Save failed: ' + error.message;
+        }
+    } finally {
+        saveButton.disabled = false;
+    }
+});
+
+actionCell.appendChild(saveButton);
+
+        }
+
+        if (data.users.length === 0) {
+            const row = tbody.insertRow();
+            const cell = row.insertCell();
+            cell.colSpan = 3;
+            cell.className = 'px-5 py-8 text-center text-gray-500';
+            cell.textContent = 'No users found.';
+        }
+
+        if (status) {
+            status.textContent =
+                'Loaded ' + data.users.length +
+                ' demo user settings.';
+        }
+
+    } catch (error) {
+        if (status) {
+            status.textContent =
+                'Unable to load settings: ' + error.message;
+        }
+    }
+}
+
         async function renderAdminActiveTrades(){
             if(ntAdminDemoTradesLoading)return;
             ntAdminDemoTradesLoading=true;
@@ -1591,8 +1827,8 @@ async function reviewDbDeposit(d, action) {
                        <button onclick="setForcedTradeResult(${t.id},'LOSS')" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-all shadow-md">Set LOSS</button>`;
                    return `<tr class="hover:bg-gray-800/30"><td class="px-6 py-4 font-bold text-white">${ntAdminDemoEscape(t.user_email)}</td>
                      <td class="px-6 py-4"><span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase ${t.direction==='UP'?'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30':'bg-red-500/20 text-red-400 border border-red-500/30'}">${ntAdminDemoEscape(asset)} (${ntAdminDemoEscape(t.direction)})</span></td>
-                     <td class="px-6 py-4 font-bold text-green-400">${ntAdminDemoMoney(t.amount_cents)}</td>
-                     <td class="px-6 py-4 font-mono text-blue-400 font-bold">${remaining}s</td>
+                     <td class="px-6 py-4 font-bold text-green-400">${ntAdminDemoMoney(t.amount_cents)}</td> 
+                     <td class="px-6 py-4 font-mono text-blue-400 font-bold nt-admin-countdown" data-expires-ms="${Number(t.expires_at_ms)}">${remaining}s</td>
                      <td class="px-6 py-4 text-right space-x-2">${actions}</td></tr>`;
                 }).join(''):'<tr><td colspan="5" class="px-6 py-8 text-center text-gray-600 italic">No active trades running currently.</td></tr>';
                 const doneBox=document.getElementById('admin-completed-trades-body');
@@ -1612,7 +1848,7 @@ async function reviewDbDeposit(d, action) {
         }
         function renderAdminCompletedTrades(){/* Data loaded with active trades. */}
         async function setForcedTradeResult(tradeId,result){
-            if(!confirm('DEMO ONLY: Choose '+result+' for this simulated trade? This is not an actual market result.'))return;
+            if(!confirm('DEMO ONLY: Choose '+result+' for this simulated trade?'))return;
             try{
                 const r=await fetch('/api/admin/demo-main/trades/'+encodeURIComponent(tradeId)+'/result',{
                     method:'PATCH',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({result})});
@@ -1622,6 +1858,33 @@ async function reviewDbDeposit(d, action) {
                 await renderAdminActiveTrades();
             }catch(e){alert('Demo Trading: '+e.message);}
         }
+        
+/* Smooth Admin Trading Countdown */
+setInterval(() => {
+    document.querySelectorAll(
+        '#admin-active-trades-body .nt-admin-countdown'
+    ).forEach((element) => {
+
+        const expiresAt = Number(element.dataset.expiresMs);
+
+        if (!Number.isFinite(expiresAt) || expiresAt <= 0) {
+            return;
+        }
+
+        const seconds = Math.max(
+            0,
+            Math.ceil((expiresAt - Date.now()) / 1000)
+        );
+
+        const display = seconds > 0
+            ? `${seconds}s`
+            : '0s';
+
+        if (element.textContent !== display) {
+            element.textContent = display;
+        }
+    });
+}, 250);
 
         setInterval(() => {
             if (document.getElementById('panel-trading-control') && !document.getElementById('panel-trading-control').classList.contains('hidden')) { loadAdminData(); }
@@ -2386,7 +2649,7 @@ if (mustReviewExamples && (
         if (!await ntConfirm(
             "Approve KYC for " +
             request.email +
-            "? This approves practice-account access, NOT real identity verification."
+            "? This will mark the account as verified."
         )) {
             return;
         }
