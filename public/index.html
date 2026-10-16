@@ -1383,7 +1383,8 @@ button.bg-blue-600:hover,button[class*="bg-blue-600"]:hover{box-shadow:0 7px 27p
 
         <!-- SUPPORT CHAT PAGE -->
         <div id="page-support" class="tab-page hidden max-w-2xl mx-auto space-y-4">
-            <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[650px]">
+            <div id="support-chat-panel" class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-xl flex flex-col h-[650px]">
+
                 <div class="bg-gray-800/80 p-4 border-b border-gray-700/60 flex items-center justify-between backdrop-blur-md">
                     <div class="flex items-center space-x-3">
                         <button onclick="switchTab('settings')" class="text-gray-400 hover:text-white mr-2"><i class="fa-solid fa-arrow-left"></i></button>
@@ -3166,6 +3167,37 @@ if (wasNearBottom) {
             }catch(error){chatBody.textContent='Support Chat: '+error.message;}
             finally {ntSupportLoading=false;}
         }
+        {/* Mobile Support Chat Keyboard Fix */}
+(function setupMobileSupportKeyboard() {
+    const panel = document.getElementById("support-chat-panel");
+    const input = document.getElementById("chat-input");
+    const viewport = window.visualViewport;
+
+    if (!panel || !input || !viewport) return;
+
+    function adjustChatHeight() {
+        if (document.activeElement !== input || window.innerWidth > 768) {
+            panel.style.height = "";
+            return;
+        }
+
+        const availableHeight =
+            viewport.offsetTop +
+            viewport.height -
+            panel.getBoundingClientRect().top - 12;
+
+        panel.style.height =
+            Math.max(180, Math.min(650, availableHeight)) + "px";
+    }
+
+    input.addEventListener("focus", adjustChatHeight);
+    input.addEventListener("blur", () => {
+        panel.style.height = "";
+    });
+
+    viewport.addEventListener("resize", adjustChatHeight);
+    viewport.addEventListener("scroll", adjustChatHeight);
+})();
         setInterval(()=>{
             const panel=document.getElementById('page-support');
             if(loggedInUser&&panel&&!panel.classList.contains('hidden'))void loadChatMessages();
