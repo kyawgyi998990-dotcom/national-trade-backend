@@ -1824,12 +1824,7 @@ app.post("/api/kyc/documents", async (req, res) => {
         const front = req.files?.front?.[0];
         const back = req.files?.back?.[0];
         if (!fullName || !idNumber || fullName.length > 150 || idNumber.length > 100) {
-            return res.status(400).json({ message: "Enter a name and an ID reference number" });
-        }
-        if (ntPublicVirtual && (!/^SAMPLE-[A-Za-z0-9-]{4,40}$/i.test(idNumber) ||
-            /\b(?:ssn|social.security|passport.number)\b/i.test(fullName))) {
-            return res.status(400).json({message:
-                'Use fictional applicant details and a SAMPLE- reference. Real identity numbers are not accepted.'});
+            return res.status(400).json({ message: "Enter your legal name and Legal ID number" });
         }
         const frontType = kycImageExt(front);
         const backType = kycImageExt(back);

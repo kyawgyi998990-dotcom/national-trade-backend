@@ -2768,16 +2768,12 @@ if (node) {
 
 async function submitIDVerification() {
     const name = document.getElementById("id-name").value.trim();
-    const number = ntNormalizeExampleReference(document.getElementById("id-number").value);
+    const number = document.getElementById("id-number").value.trim();
     const frontFile = document.getElementById("id-file-front").files[0];
     const backFile = document.getElementById("id-file-back").files[0];
 
     if (!name || !number) {
         alert("Please enter your full name and document number.");
-        return;
-    }
-    if (window.NT_PUBLIC_VIRTUAL && !number) {
-        ntNotify('Enter a short example reference (e.g. 22056). Do not enter a real ID/SSN.', 'error');
         return;
     }
     if (name.length > 150 || number.length > 100) {
