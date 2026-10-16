@@ -2825,6 +2825,50 @@ body: JSON.stringify({
             }catch(error){if(activeChatUser===selected)chatBody.textContent='Chat messages: '+error.message;}
             finally {ntAdminChatMsgsBusy=false;}
         }
+        
+(function enableAdminChatImagePreview() {
+    document.addEventListener("click", function(event) {
+        const image = event.target.closest(
+            '#admin-chat-box-body img[src^="/api/support/images/"]'
+        );
+
+        if (!image) return;
+
+        const viewer = document.createElement("div");
+
+        viewer.style.cssText = `
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            cursor: zoom-out;
+        `;
+
+        const largeImage = document.createElement("img");
+        largeImage.src = image.currentSrc || image.src;
+        largeImage.alt = "Admin chat image preview";
+
+        largeImage.style.cssText = `
+            max-width: 100%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 10px;
+        `;
+
+        viewer.appendChild(largeImage);
+
+        viewer.addEventListener("click", () => {
+            viewer.remove();
+        });
+
+        document.body.appendChild(viewer);
+    });
+})();
+
         function adminHandleImageSelect(event) {
             const file=event.target.files?.[0];
             if(!file)return;
