@@ -3106,9 +3106,29 @@ async function loadRealDepositHistory(force = false) {
                 const response=await fetch('/api/support/messages',{credentials:'same-origin',cache:'no-store'});
                 const data=await response.json().catch(()=>({}));
                 if(!response.ok)throw new Error(data.message||'Could not load chat');
-                const rows=data.messages||[];
+                
+const rows = data.messages || [];
+
+const signature = JSON.stringify(rows.map(msg => [
+    msg.id,
+    msg.sender,
+    msg.text,
+    msg.image_url,
+    msg.created_at_ms,
+    msg.edited_at_ms
+]));
+
+if (
+    chatBody._lastRenderedSignature === signature &&
+    chatBody.childElementCount > 0
+) {
+    return;
+}
+
+chatBody._lastRenderedSignature = signature;
+                const previousScrollTop = chatBody.scrollTop;
                 const wasNearBottom=chatBody.scrollHeight-chatBody.scrollTop-chatBody.clientHeight<80;
-                chatBody.innerHTML=rows.length===0
+                const chatHtml=rows.length===0
                   ? '<div class="text-center py-12"><p class="text-sm font-bold text-white">Live Support</p><p class="text-xs text-gray-500">How can we assist you today?</p></div>'
                   : rows.map(msg=>{
                     const mine=msg.sender==='user';
@@ -3117,7 +3137,32 @@ async function loadRealDepositHistory(force = false) {
                     const message=msg.text?`<p class="text-xs whitespace-pre-wrap break-words">${ntSupportEsc(msg.text)}</p>`:'';
                     return `<div class="flex flex-col ${mine?'items-end':'items-start'}"><div class="max-w-[80%] rounded-2xl p-3.5 ${mine?'bg-cyan-600 text-white':'bg-gray-800 text-gray-200'} shadow-md">${image}${message}<p class="text-[9px] mt-1 opacity-70">${ntSupportTime(msg.created_at_ms)}${msg.edited_at_ms?' · edited':''}</p></div></div>`;
                   }).join('');
-                if(wasNearBottom)chatBody.scrollTop=chatBody.scrollHeight;
+                  
+const holder = document.createElement('div');
+holder.innerHTML = chatHtml;
+
+const newItems = Array.from(holder.children);
+const oldItems = Array.from(chatBody.children);
+
+newItems.forEach((newItem, index) => {
+    const oldItem = oldItems[index];
+
+    if (!oldItem) {
+        chatBody.appendChild(newItem);
+    } else if (oldItem.outerHTML !== newItem.outerHTML) {
+        oldItem.replaceWith(newItem);
+    }
+});
+
+oldItems.slice(newItems.length).forEach(item => item.remove());
+
+                
+if (wasNearBottom) {
+    chatBody.scrollTop = chatBody.scrollHeight;
+} else {
+    chatBody.scrollTop = previousScrollTop;
+}
+
             }catch(error){chatBody.textContent='Support Chat: '+error.message;}
             finally {ntSupportLoading=false;}
         }
