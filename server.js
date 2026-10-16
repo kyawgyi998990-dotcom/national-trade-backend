@@ -62,9 +62,17 @@ app.use(session({
 // Production mutation requests must originate from this site's own HTTPS origin.
 app.use('/api', async (req, res, next) => {
     if (process.env.NODE_ENV !== 'production' || !['POST','PUT','PATCH','DELETE'].includes(req.method)) return next();
-    const origin = req.get('origin');
-    const siteOrigin = process.env.PUBLIC_ORIGIN;
-    if (!siteOrigin || origin !== siteOrigin) {
+    
+const origin = req.get('origin');
+const siteOrigin = process.env.PUBLIC_ORIGIN;
+const netlifyOrigin = 'https://nationaltradeofficall.netlify.app';
+
+if (
+    !siteOrigin ||
+    !origin ||
+    (origin !== siteOrigin && origin !== netlifyOrigin)
+) {
+
         return res.status(403).json({ message: 'Same-origin request required' });
     }
     return next();
